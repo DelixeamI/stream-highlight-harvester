@@ -1,0 +1,126 @@
+game: deadlock
+device: cuda
+
+audio:
+  tracks: auto # auto or mapping, e.g. {mix: 0, mic: 1, game: 2, discord: 3}
+  separation:
+    enabled: auto # auto = only for track variant A (single mix)
+    backend: demucs # audio_separator | demucs
+    model: "htdemucs"
+    chunk_s: 600
+  vad:
+    threshold: 0.5
+    min_speech_ms: 250
+    min_silence_ms: 300
+    pad_ms: 150
+  lid:
+    enabled: true
+    backend: speechbrain # speechbrain | whisper
+    min_segment_s: 1.5
+    non_ru_confidence: 0.8
+
+asr:
+  backend: faster_whisper # gigaam | faster_whisper | nemo
+  gigaam:
+    model: "v3_e2e"
+  faster_whisper:
+    model: "large-v3"
+    compute_type: "float16"
+    beam_size: 5
+  alignment: auto # auto | ctc_forced | none
+  hallucination_filter:
+    no_speech_prob: 0.6
+    avg_logprob: -1.0
+    compression_ratio: 2.4
+    blacklist_file: "plugins/common/whisper_blacklist_ru.txt"
+
+timeline:
+  resolution_s: 0.5
+  smoothing_sigma_s: 1.5
+
+features:
+  weights:
+    loud_z: 0.20
+    pitch_z: 0.05
+    laugh_p: 0.25
+    scream_p: 0.10
+    hype_lex: 0.10
+    chat_rate_z: 0.15
+    chat_laugh: 0.10
+    kill: 0.30
+    semantic_flag: 0.20
+  caps:
+    loud_z: 5.0
+    pitch_z: 4.0
+    chat_rate_z: 6.0
+
+vision:
+  sampling:
+    mode: fps # fps | keyframes
+    fps: 2.0
+  calibration: "plugins/deadlock/calibration/default.yaml"
+  multikill:
+    window_s: 10.0
+
+chat:
+  path: null
+  delay:
+    auto: true
+    min_delay_s: 3.0
+    max_delay_s: 25.0
+    default_s: 8.0
+
+semantic_scan:
+  enabled: true
+  window_min: 8
+  overlap_min: 1
+
+judge:
+  profile: local # claude | openrouter | cloud | local
+  profiles:
+    claude:
+      backend: anthropic
+      base_url: "https://api.anthropic.com"
+      model: "claude-3-5-haiku-latest"
+      api_key_env: "ANTHROPIC_API_KEY"
+    openrouter:
+      backend: openai
+      base_url: "https://openrouter.ai/api/v1"
+      model: "anthropic/claude-3.5-haiku"
+      api_key_env: "OPENROUTER_API_KEY"
+    cloud:
+      backend: openai
+      base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+      model: "gemini-2.5-flash"
+      api_key_env: "GEMINI_API_KEY"
+    local:
+      backend: openai
+      base_url: "http://localhost:11434/v1"
+      model: "qwen3:8b"
+      api_key_env: null
+  max_candidates: 120
+  max_cost_usd: 2.0
+  prompt_file: "prompts/judge_ru.md"
+  examples_file: "prompts/judge_examples.yaml"
+
+output:
+  top_n: 20
+  min_score: 0.50
+  max_share_per_category: 0.5
+  alpha_judge: 0.7
+  clip_length_s:
+    multikill: [20, 55]
+    epic_play: [20, 60]
+    funny_joke: [15, 55]
+    funny_reaction: [15, 50]
+    fail: [18, 55]
+    other: [15, 60]
+  pad_before_s: 3.0
+  pad_after_s: 2.0
+
+render:
+  codec: h264_nvenc
+  preset: p5
+  cq: 20
+  audio_bitrate: 192k
+  max_parallel: 2
