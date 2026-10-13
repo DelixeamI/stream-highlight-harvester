@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Отчёт нарезки: {{ vod_filename }}</title>
+  <style>
+    :root {
+      --bg-dark: #0f111a;
+      --bg-card: #181b29;
+      --bg-card-hover: #1f2336;
+      --border: #2a2f45;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --cat-multikill: #ef4444;
+      --cat-epic: #f59e0b;
+      --cat-reaction: #10b981;
+      --cat-joke: #06b6d4;
+      --cat-fail: #f97316;
+      --cat-other: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    .container { max-width: 1300px; margin: 0 auto; }
+    
+    header {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .header-top h1 { font-size: 24px; font-weight: 700; color: #fff; }
+    .badge-app { background: #312e81; color: #a5b4fc; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .meta-item strong { color: var(--text-main); }
+
+    /* Timeline Chart Section */
+    .chart-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .chart-header h2 { font-size: 17px; font-weight: 600; }
+    .chart-container { width: 100%; overflow-x: auto; }
+    .chart-container svg { width: 100%; height: 140px; display: block; }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .filter-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { background: var(--bg-card-hover); color: #fff; }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    
+    .sort-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+    .sort-select {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Moments Grid */
+    .moments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 20px;
+    }
+
+    .moment-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .moment-card:hover {
+      border-color: #4338ca;
+      transform: translateY(-2px);
+    }
+
+    .video-wrapper {
+      background: #000;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      position: relative;
+    }
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+    
+    .card-meta-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .cat-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: #fff;
+    }
+    .cat-multikill { background: var(--cat-multikill); }
+    .cat-epic_play { background: var(--cat-epic); }
+    .cat-funny_reaction { background: var(--cat-reaction); }
+    .cat-funny_joke { background: var(--cat-joke); }
+    .cat-fail { background: var(--cat-fail); }
+    .cat-other { background: var(--cat-other); }
+
+    .score-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .tc-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-family: monospace;
+      color: #cbd5e1;
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--border); color: #fff; }
+
+    .card-reason {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      flex-grow: 1;
+    }
+
+    .quote-box {
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 3px solid var(--accent);
+      padding: 6px 10px;
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+      font-style: italic;
+      color: #c7d2fe;
+      margin-bottom: 10px;
+    }
+
+    .evidence-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .evidence-tag {
+      background: #1e2235;
+      border: 1px solid var(--border);
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <h1>Отчёт нарезки: {{ vod_filename }}</h1>
+        <span class="badge-app">Narezka v{{ run.app_version }}</span>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-item">Длительность: <strong>{{ duration_formatted }}</strong> ({{ duration_s }} с)</div>
+        <div class="meta-item">Моментов: <strong>{{ moments|length }}</strong> / Кандидатов: <strong>{{ num_candidates }}</strong></div>
+        <div class="meta-item">ASR бэкенд: <strong>{{ run.asr_backend }}</strong></div>
+        <div class="meta-item">Судья: <strong>{{ run.judge_model }}</strong></div>
+        <div class="meta-item">Время анализа: <strong>{{ total_elapsed_s }} с</strong></div>
+      </div>
+    </header>
+
+    <!-- Mini-chart S(t) -->
+    <section class="chart-section">
+      <div class="chart-header">
+        <h2>Интегральный интерес S(t) на стриме</h2>
+        <span style="font-size: 12px; color: var(--text-muted);">Кликните на карточку или график для перехода</span>
+      </div>
+      <div class="chart-container">
+        {{ svg_chart | safe }}
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <div class="filter-group" id="filter-group">
+        <button class="filter-btn active" data-cat="all">Все ({{ moments|length }})</button>
+        {% for cat_name, cat_count in category_counts.items() %}
+          <button class="filter-btn" data-cat="{{ cat_name }}">{{ cat_name }} ({{ cat_count }})</button>
+        {% endfor %}
+      </div>
+      <div class="sort-group">
+        <label for="sort-select">Сортировка:</label>
+        <select id="sort-select" class="sort-select">
+          <option value="time">По времени</option>
+          <option value="score">По баллу</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Moments Grid -->
+    <div class="moments-grid" id="moments-grid">
+      {% for m in moments %}
+        <div class="moment-card" id="{{ m.id }}" data-category="{{ m.category }}" data-start="{{ m.start }}" data-score="{{ m.final_score }}">
+          <div class="video-wrapper">
+            <video controls preload="metadata" src="{{ m.video_src }}">
+              Ваш браузер не поддерживает встроенное видео.
+            </video>
+          </div>
+          <div class="card-body">
+            <div class="card-meta-line">
+              <span class="cat-badge cat-{{ m.category }}">{{ m.category }}</span>
+              <span class="score-badge">★ {{ m.score_display }}/10</span>
+            </div>
+            <h3 class="card-title">{{ m.title }}</h3>
+            <div class="tc-bar">
+              <span>{{ m.start_tc }} – {{ m.end_tc }} ({{ m.duration_s }} с)</span>
+              <button class="copy-btn" onclick="copyTimecode('{{ m.start_tc }} - {{ m.end_tc }}')">Копировать</button>
+            </div>
+            <p class="card-reason">{{ m.reason }}</p>
+            
+            {% if m.quotes %}
+              <div class="quote-box">
+                {% for q in m.quotes %}
+                  <div>«{{ q }}»</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="evidence-tags">
+              {% for k, v in m.evidence_pills.items() %}
+                <span class="evidence-tag">{{ k }}: {{ v }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Таймкод скопирован!</div>
+
+  <script>
+    function copyTimecode(text) {
+      navigator.clipboard.writeText(text).then(function() {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+
+    // Filtering and sorting
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const sortSelect = document.getElementById('sort-select');
+    const grid = document.getElementById('moments-grid');
+    const cards = Array.from(document.querySelectorAll('.moment-card'));
+
+    let activeCategory = 'all';
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCategory = btn.dataset.cat;
+        applyFilterAndSort();
+      });
+    });
+
+    sortSelect.addEventListener('change', applyFilterAndSort);
+
+    function applyFilterAndSort() {
+      const sortBy = sortSelect.value;
+
+      // Filter
+      cards.forEach(card => {
+        const cat = card.dataset.category;
+        if (activeCategory === 'all' || cat === activeCategory) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Sort visible
+      const visible = cards.filter(c => c.style.display !== 'none');
+      visible.sort((a, b) => {
+        if (sortBy === 'time') {
+          return parseFloat(a.dataset.start) - parseFloat(b.dataset.start);
+        } else {
+          return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
+        }
+      });
+
+      visible.forEach(card => grid.appendChild(card));
+    }
+  </script>
+</body>
+</html>
