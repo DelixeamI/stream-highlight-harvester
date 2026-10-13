@@ -1,0 +1,57 @@
+examples:
+  - id: ex_01
+    candidate_id: c_0012
+    category: multikill
+    verdict: keep
+    score: 9
+    confidence: 0.95
+    title_ru: Вышел и развалил раунд в соло
+    reason_ru: Серия быстрых фрагов в одиночку с эмоциональным празднованием команды.
+    evidence_quotes:
+      - вышел всех убил
+      - хорош
+    start_seg: 812
+    end_seg: 824
+    needs_visual_check: false
+  - id: ex_02
+    candidate_id: c_0017
+    category: fail
+    verdict: keep
+    score: 8
+    confidence: 0.90
+    title_ru: Обидный промах в спину на пистолетке
+    reason_ru: Идеальный заход во фланг закончился промахом в спину и бурной эмоциональной реакцией.
+    evidence_quotes:
+      - пистолетка чисто на мне
+      - я спину не убил мы идеально сделали
+    start_seg: 461
+    end_seg: 471
+    needs_visual_check: false
+  - id: ex_03
+    candidate_id: c_0028
+    category: epic_play
+    verdict: keep
+    score: 8
+    confidence: 0.85
+    title_ru: Безумный лаки-шот на лонге
+    reason_ru: Невероятное попадание на реакцию с искренним восторгом от неожиданного везения.
+    evidence_quotes:
+      - ебать мне повезло
+      - как я его убил
+    start_seg: 745
+    end_seg: 755
+    needs_visual_check: false
+  - id: ex_04
+    candidate_id: c_0035
+    category: funny_reaction
+    verdict: keep
+    score: 7
+    confidence: 0.85
+    title_ru: Когда тиммейт — гений тактики
+    reason_ru: Абсурдный спор и эмоциональная реакция на неожиданные действия напарника.
+    evidence_quotes:
+      - я специально встал
+      - как они играли
+    start_seg: 1395
+    end_seg: 1404
+    needs_visual_check: false
