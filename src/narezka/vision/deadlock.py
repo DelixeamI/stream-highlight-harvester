@@ -72,8 +72,14 @@ class DeadlockVisionPlugin(BaseGameVisionPlugin):
 
             # Check hero death transitions (living saturation > 65 to dead < 55)
             if prev_slot_sats is not None:
-                for i in range(12):
-                    if prev_slot_sats[i] > 65.0 and slot_sats[i] < 55.0:
+                dropped_slots = [
+                    i for i in range(12)
+                    if prev_slot_sats[i] > 65.0 and slot_sats[i] < 55.0
+                ]
+                # If 3 or more hero slots drop simultaneously in the exact same frame,
+                # it is a scene transition (menu, scoreboard, death screen, map load), NOT kills!
+                if len(dropped_slots) < 3:
+                    for i in dropped_slots:
                         team = "Amber" if i < 6 else "Sapphire"
                         hero_deaths.append((curr_t, i, team))
                         # Is this an enemy hero death?
