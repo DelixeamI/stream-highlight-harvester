@@ -92,6 +92,7 @@ class S11JudgeStage(Stage):
             segments=segments,
             events=events,
             max_candidates=project.config.judge.max_candidates,
+            vod_path=project.vod_path,
         )
 
         # 6. Save verdicts JSONL

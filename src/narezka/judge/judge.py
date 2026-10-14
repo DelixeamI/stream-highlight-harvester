@@ -11,7 +11,8 @@ import yaml
 
 from narezka.asr.base import Segment
 from narezka.config import JudgeConfig
-from narezka.judge.context_builder import build_candidate_prompt_context
+from narezka.judge.context_builder import build_candidate_prompt_context, format_seconds_time
+from narezka.judge.frames import extract_candidate_keyframes
 from narezka.judge.validation import validate_judge_verdict
 from narezka.llm.client import LLMClient
 from narezka.llm.schemas import JudgeVerdict
@@ -45,9 +46,21 @@ class LLMJudge:
             max_cost_usd=judge_config.max_cost_usd,
         )
 
-        # Load system prompt
+        # Check if multimodal VLM mode should be enabled
+        model_name = profile.model.lower()
+        self.is_vlm = (
+            profile_key in ["cloud", "openrouter"]
+            or "gemini" in model_name
+            or "vl" in model_name
+            or "vision" in model_name
+        )
+
+        # Load system prompt (prefer judge_vlm_ru.md for VLM)
+        vlm_path = Path(__file__).resolve().parents[3] / "prompts" / "judge_vlm_ru.md"
         p_path = prompt_file or Path(judge_config.prompt_file)
-        if not p_path.is_file():
+        if self.is_vlm and vlm_path.is_file() and not prompt_file:
+            p_path = vlm_path
+        elif not p_path.is_file():
             p_path = Path(__file__).resolve().parents[3] / "prompts" / "judge_ru.md"
         self.system_prompt = p_path.read_text(encoding="utf-8") if p_path.is_file() else "Ты — судья хайлайтов."
 
@@ -69,8 +82,9 @@ class LLMJudge:
         segments: list[Segment],
         events: list[Event],
         streamer_hero: str | None = None,
+        vod_path: Path | None = None,
     ) -> tuple[JudgeVerdict, list[str]]:
-        """Evaluate a single candidate window with the LLM Judge."""
+        """Evaluate a single candidate window with the LLM / VLM Judge."""
         context_str = build_candidate_prompt_context(
             candidate=candidate,
             segments=segments,
@@ -79,18 +93,44 @@ class LLMJudge:
             streamer_hero=streamer_hero,
         )
 
-        messages = [
-            {"role": "system", "content": self.system_prompt},
-        ]
+        frames: list[tuple[float, str]] = []
+        if self.is_vlm and vod_path and vod_path.is_file():
+            try:
+                frames = extract_candidate_keyframes(
+                    vod_path=vod_path,
+                    start_s=candidate.start,
+                    end_s=candidate.end,
+                    peak_s=candidate.peak,
+                    num_frames=8,
+                )
+            except Exception as e:
+                logger.warning("Frame extraction failed for candidate %s: %s", candidate.id, e)
 
-        # Add few-shot examples if available
-        for ex in self.examples[:2]:
-            ex_verdict = {k: v for k, v in ex.items() if k != "id"}
-            messages.append({"role": "user", "content": f"Пример кандидата:\nКАНДИДАТ {ex.get('candidate_id', 'c_0001')}"})
-            messages.append({"role": "assistant", "content": json.dumps(ex_verdict, ensure_ascii=False)})
-
-        # Actual candidate prompt
-        messages.append({"role": "user", "content": context_str})
+        messages: list[dict[str, Any]]
+        if frames:
+            user_content: list[dict[str, Any]] = [
+                {"type": "text", "text": context_str}
+            ]
+            for f_t, b64_img in frames:
+                user_content.append({"type": "text", "text": f"\n[Кадр геймплея на {format_seconds_time(f_t)}]:"})
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{b64_img}"}
+                })
+            messages = [
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": user_content},
+            ]
+        else:
+            messages = [
+                {"role": "system", "content": self.system_prompt},
+            ]
+            # Add few-shot examples if available
+            for ex in self.examples[:2]:
+                ex_verdict = {k: v for k, v in ex.items() if k != "id"}
+                messages.append({"role": "user", "content": f"Пример кандидата:\nКАНДИДАТ {ex.get('candidate_id', 'c_0001')}"})
+                messages.append({"role": "assistant", "content": json.dumps(ex_verdict, ensure_ascii=False)})
+            messages.append({"role": "user", "content": context_str})
 
         raw_verdict, meta = self.client.generate_json(
             messages=messages,
@@ -128,6 +168,7 @@ class LLMJudge:
         events: list[Event],
         streamer_hero: str | None = None,
         max_candidates: int | None = None,
+        vod_path: Path | None = None,
     ) -> list[tuple[JudgeVerdict, list[str]]]:
         """Evaluate list of candidates sequentially with budget protection."""
         limit = max_candidates or self.config.max_candidates
@@ -141,6 +182,7 @@ class LLMJudge:
                     segments=segments,
                     events=events,
                     streamer_hero=streamer_hero,
+                    vod_path=vod_path,
                 )
                 results.append((v, flags))
             except Exception as e:

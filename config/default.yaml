@@ -76,7 +76,7 @@ semantic_scan:
   overlap_min: 1
 
 judge:
-  profile: local # claude | openrouter | cloud | local
+  profile: cloud # claude | openrouter | cloud | local
   profiles:
     claude:
       backend: anthropic
@@ -91,7 +91,7 @@ judge:
     cloud:
       backend: openai
       base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
-      model: "gemini-2.5-flash"
+      model: "gemini-3.1-flash-lite"
       api_key_env: "GEMINI_API_KEY"
     local:
       backend: openai
@@ -100,7 +100,7 @@ judge:
       api_key_env: null
   max_candidates: 120
   max_cost_usd: 2.0
-  prompt_file: "prompts/judge_ru.md"
+  prompt_file: "prompts/judge_vlm_ru.md"
   examples_file: "prompts/judge_examples.yaml"
 
 output:

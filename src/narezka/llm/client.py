@@ -7,10 +7,12 @@ import json
 import logging
 import os
 import re
+import time
 from pathlib import Path
 from typing import Any, TypeVar
 
 import anthropic
+import httpx
 import openai
 from pydantic import BaseModel, ValidationError
 
@@ -70,22 +72,25 @@ class LLMClient:
             self.client: openai.OpenAI | None = None
         else:
             self.anthropic_client = None
+            proxy = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY") or os.getenv("ALL_PROXY")
+            http_client = httpx.Client(proxy=proxy, timeout=60.0) if proxy else None
             self.client = openai.OpenAI(
                 base_url=profile_config.base_url,
                 api_key=api_key,
-                timeout=45.0,
+                timeout=60.0,
+                http_client=http_client,
             )
 
-    def _compute_cache_key(self, messages: list[dict[str, str]], temperature: float) -> str:
+    def _compute_cache_key(self, messages: list[dict[str, Any]], temperature: float) -> str:
         raw = f"{self.profile.model}::{temperature}::{json.dumps(messages, sort_keys=True)}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def generate_json(
         self,
-        messages: list[dict[str, str]],
+        messages: list[dict[str, Any]],
         schema_cls: type[T],
         temperature: float = 0.1,
-        max_retries: int = 2,
+        max_retries: int = 3,
     ) -> tuple[T, dict[str, Any]]:
         """Call LLM ensuring structured JSON output matching schema_cls.
 
@@ -112,16 +117,18 @@ class LLMClient:
 
         current_messages = list(messages)
         last_error = ""
+        is_schema_error = False
 
         for attempt in range(max_retries + 1):
             if attempt > 0:
                 logger.info("Retrying LLM generation (attempt %d/%d)...", attempt, max_retries)
-                current_messages.append(
-                    {
-                        "role": "user",
-                        "content": f"Предыдущий ответ не прошел валидацию схемы: {last_error}. Пожалуйста, исправь ошибки и верни строго корректный JSON.",
-                    }
-                )
+                if is_schema_error:
+                    current_messages.append(
+                        {
+                            "role": "user",
+                            "content": f"Предыдущий ответ не прошел валидацию схемы: {last_error}. Пожалуйста, исправь ошибки и верни строго корректный JSON.",
+                        }
+                    )
 
             try:
                 schema_doc = json.dumps(schema_cls.model_json_schema(), ensure_ascii=False)
@@ -226,6 +233,7 @@ class LLMClient:
                     parsed_raw = json.loads(clean_content)
                 except json.JSONDecodeError as jde:
                     last_error = f"Invalid JSON syntax: {jde}"
+                    is_schema_error = True
                     continue
 
                 # Validate Pydantic schema
@@ -256,6 +264,7 @@ class LLMClient:
                     }
                 except ValidationError as ve:
                     last_error = f"Pydantic validation error: {ve}"
+                    is_schema_error = True
                     continue
 
             except (openai.AuthenticationError, anthropic.AuthenticationError) as auth_err:
@@ -268,6 +277,8 @@ class LLMClient:
                 ) from conn_err
             except Exception as exc:
                 last_error = str(exc)
-                logger.warning("LLM API call exception: %s", exc)
+                is_schema_error = False
+                logger.warning("LLM API call exception (attempt %d/%d): %s", attempt, max_retries, exc)
+                time.sleep(1.5 * (attempt + 1))
 
         raise ValueError(f"Failed to obtain valid LLM structured output after {max_retries} retries: {last_error}")
