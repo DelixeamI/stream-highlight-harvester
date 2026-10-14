@@ -34,6 +34,7 @@ dependencies = [
     "librosa>=1.0.0",
     "jiwer>=3.0.0",
     "rapidfuzz>=3.0.0",
+    "tqdm>=4.66.0",
 ]
 
 [project.optional-dependencies]
