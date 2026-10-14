@@ -113,3 +113,23 @@ def test_correlation_id_middleware(client: TestClient) -> None:
     assert resp_custom.status_code == 200
     assert resp_custom.headers["X-Request-ID"] == custom_id
 
+
+def test_cli_openapi_export(tmp_path: Path) -> None:
+    import json
+
+    from typer.testing import CliRunner
+
+    from narezka.cli import app as cli_app
+
+    runner = CliRunner()
+    out_file = tmp_path / "openapi_test.json"
+    result = runner.invoke(cli_app, ["openapi", "--output", str(out_file)])
+    assert result.exit_code == 0
+    assert out_file.is_file()
+
+    spec = json.loads(out_file.read_text(encoding="utf-8"))
+    assert spec["openapi"].startswith("3.")
+    assert "/health" in spec["paths"]
+    assert "/api/v1/jobs" in spec["paths"]
+
+

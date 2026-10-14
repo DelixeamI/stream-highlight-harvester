@@ -594,6 +594,24 @@ def demo_cmd(
     raise typer.Exit(code=0)
 
 
+@app.command(name="openapi")
+def export_openapi(
+    output: Path = typer.Option(Path("openapi.json"), "--output", "-o", help="Куда сохранить JSON-схему OpenAPI."),
+    indent: int = typer.Option(2, "--indent", help="Отступ для форматирования JSON."),
+) -> None:
+    """Экспорт OpenAPI 3.1 JSON-спецификации REST API без запуска веб-сервера."""
+    import json
+
+    from narezka.api.app import app as fastapi_app
+
+    schema = fastapi_app.openapi()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(schema, indent=indent, ensure_ascii=False), encoding="utf-8")
+    console.print(f"[bold green]✓[/bold green] Спецификация OpenAPI успешно экспортирована в [cyan]{output.resolve()}[/cyan]")
+    raise typer.Exit(code=0)
+
+
 if __name__ == "__main__":
     app()
+
 
