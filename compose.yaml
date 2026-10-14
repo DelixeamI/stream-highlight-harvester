@@ -1,0 +1,44 @@
+services:
+  # Stream Highlight Harvester FastAPI Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: narezka-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434/v1
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./projects:/app/projects
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    depends_on:
+      - ollama
+
+  # Self-Hosted Ollama LLM Inference Server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: narezka-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  ollama_models:
