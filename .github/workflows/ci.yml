@@ -25,10 +25,16 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install system packages (FFmpeg and libsndfile)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg libsndfile1
+
       - name: Install dependencies
         run: |
           uv sync --extra dev
           uv pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cpu
+          uv pip install silero-vad faster-whisper
 
       - name: Run Ruff Linter
         run: |

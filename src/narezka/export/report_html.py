@@ -165,8 +165,11 @@ def render_html_report(project_dir: Path, output_path: Path | None = None) -> Pa
         rel_vod_path = vod_path.relative_to(project_dir)
         vod_url_base = str(rel_vod_path).replace("\\", "/")
     except ValueError:
-        # If on different drive or outside, use file URI or absolute path
-        vod_url_base = vod_path.as_uri()
+        # If on different drive or outside, use file URI or fallback to normalized string
+        try:
+            vod_url_base = vod_path.resolve().as_uri()
+        except Exception:
+            vod_url_base = str(vod_path).replace("\\", "/")
 
     # Prepare moments view models
     moments_vm: list[dict[str, Any]] = []
