@@ -256,14 +256,23 @@
     <!-- Header -->
     <header>
       <div class="header-top">
-        <h1>Отчёт нарезки: {{ vod_filename }}</h1>
+        <div>
+          <h1>Отчёт нарезки: {{ vod_filename }}</h1>
+          <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+            <span>Игра: <strong style="color: #fff;">{{ game_name }}</strong></span>
+            {% if is_vlm %}
+              <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">👁 Video-VLM (Ключевые кадры)</span>
+            {% endif %}
+          </div>
+        </div>
         <span class="badge-app">Narezka v{{ run.app_version }}</span>
       </div>
       <div class="meta-grid">
         <div class="meta-item">Длительность: <strong>{{ duration_formatted }}</strong> ({{ duration_s }} с)</div>
-        <div class="meta-item">Моментов: <strong>{{ moments|length }}</strong> / Кандидатов: <strong>{{ num_candidates }}</strong></div>
-        <div class="meta-item">ASR бэкенд: <strong>{{ run.asr_backend }}</strong></div>
+        <div class="meta-item">Кандидатов: <strong>{{ num_candidates }}</strong> (Отсеяно: <strong style="color: #f87171;">{{ num_rejected }}</strong>)</div>
+        <div class="meta-item">Отобрано моментов: <strong style="color: #34d399;">{{ moments|length }}</strong></div>
         <div class="meta-item">Судья: <strong>{{ run.judge_model }}</strong></div>
+        <div class="meta-item">ASR бэкенд: <strong>{{ run.asr_backend }}</strong></div>
         <div class="meta-item">Время анализа: <strong>{{ total_elapsed_s }} с</strong></div>
       </div>
     </header>
@@ -308,13 +317,23 @@
           <div class="card-body">
             <div class="card-meta-line">
               <span class="cat-badge cat-{{ m.category }}">{{ m.category }}</span>
-              <span class="score-badge">★ {{ m.score_display }}/10</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                {% if is_vlm and m.judge_score %}
+                  <span style="font-size: 11px; background: rgba(99, 102, 241, 0.15); color: #a5b4fc; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">VLM: {{ m.judge_score }}/10</span>
+                {% endif %}
+                <span class="score-badge">★ {{ m.score_display }}/10</span>
+              </div>
             </div>
             <h3 class="card-title">{{ m.title }}</h3>
             <div class="tc-bar">
               <span>{{ m.start_tc }} – {{ m.end_tc }} ({{ m.duration_s }} с)</span>
               <button class="copy-btn" onclick="copyTimecode('{{ m.start_tc }} - {{ m.end_tc }}')">Копировать</button>
             </div>
+            {% if m.has_clip %}
+              <div style="margin-bottom: 8px;">
+                <span style="font-size: 11px; color: #34d399; font-weight: 600;">✓ Клип отрендерен (NVENC MP4)</span>
+              </div>
+            {% endif %}
             <p class="card-reason">{{ m.reason }}</p>
             
             {% if m.quotes %}

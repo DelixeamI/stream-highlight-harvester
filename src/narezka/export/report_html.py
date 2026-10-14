@@ -130,7 +130,9 @@ def render_html_report(project_dir: Path, output_path: Path | None = None) -> Pa
         doc = MomentsDocument.model_validate_json(f.read())
 
     # Load timeline data if available
-    s10_npz = project_dir / "s10_candidates" / "timeline.npz"
+    s10_npz = project_dir / "stages" / "s10_candidates" / "timeline.npz"
+    if not s10_npz.is_file():
+        s10_npz = project_dir / "s10_candidates" / "timeline.npz"
     timestamps = np.array([], dtype=np.float32)
     s_smooth = np.array([], dtype=np.float32)
     if s10_npz.is_file():
@@ -143,14 +145,45 @@ def render_html_report(project_dir: Path, output_path: Path | None = None) -> Pa
 
     # Number of candidates
     num_candidates = 0
-    c_file = project_dir / "s10_candidates" / "candidates.jsonl"
+    c_file = project_dir / "stages" / "s10_candidates" / "candidates.jsonl"
+    if not c_file.is_file():
+        c_file = project_dir / "s10_candidates" / "candidates.jsonl"
     if c_file.is_file():
         with open(c_file, encoding="utf-8") as f:
             num_candidates = sum(1 for line in f if line.strip())
 
+    # Load judge summary for reject/keep stats
+    num_rejected = 0
+    num_keep = len(doc.moments)
+    j_summary = project_dir / "stages" / "s11_judge" / "judge_summary.json"
+    if not j_summary.is_file():
+        j_summary = project_dir / "s11_judge" / "judge_summary.json"
+    if j_summary.is_file():
+        try:
+            with open(j_summary, encoding="utf-8") as f:
+                js = json.load(f)
+                num_rejected = js.get("num_reject", 0)
+                num_keep = js.get("num_keep", num_keep)
+        except Exception:
+            pass
+
+    # Game name detection
+    game_name = "Deadlock" if "deadlock" in project_dir.name.lower() else "Counter-Strike 2"
+    p_json = project_dir / "project.json"
+    if p_json.is_file():
+        try:
+            with open(p_json, encoding="utf-8") as f:
+                pj = json.load(f)
+                gn = pj.get("extra", {}).get("game")
+                if gn:
+                    game_name = gn
+        except Exception:
+            pass
+
     # Calculate stage elapsed times from meta.json files
     total_elapsed_s = 0.0
-    for stage_meta_path in project_dir.glob("*/meta.json"):
+    meta_files = set(list(project_dir.glob("stages/*/meta.json")) + list(project_dir.glob("*/meta.json")))
+    for stage_meta_path in meta_files:
         try:
             with open(stage_meta_path, encoding="utf-8") as f:
                 sm = json.load(f)
@@ -211,10 +244,13 @@ def render_html_report(project_dir: Path, output_path: Path | None = None) -> Pa
                 "end_tc": format_time_code_detailed(m.end),
                 "duration_s": round(m.end - m.start, 1),
                 "score_display": round(m.final_score * 10, 1),
+                "judge_score": getattr(m, "judge_score", 0),
+                "confidence_pct": round(getattr(m, "confidence", 1.0) * 100),
                 "final_score": m.final_score,
                 "quotes": m.evidence.get("quotes", []),
                 "evidence_pills": pills,
                 "video_src": video_src,
+                "has_clip": bool(m.clip_path and (project_dir / m.clip_path).is_file()),
             }
         )
 
@@ -231,11 +267,18 @@ def render_html_report(project_dir: Path, output_path: Path | None = None) -> Pa
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(template_dir)), autoescape=True)
     template = env.get_template("report.html.j2")
 
+    is_vlm = "gemini" in doc.run.judge_model.lower() or "vl" in doc.run.judge_model.lower()
+    total_cands = num_candidates or (num_keep + num_rejected)
+
     rendered_html = template.render(
         vod_filename=vod_filename,
+        game_name=game_name,
         duration_formatted=format_time_code(doc.vod.duration_s),
         duration_s=round(doc.vod.duration_s, 1),
-        num_candidates=num_candidates,
+        num_candidates=total_cands,
+        num_rejected=num_rejected,
+        num_keep=num_keep,
+        is_vlm=is_vlm,
         run=doc.run,
         total_elapsed_s=round(total_elapsed_s, 1),
         moments=moments_vm,
