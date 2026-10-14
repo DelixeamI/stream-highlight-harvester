@@ -28,6 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --extra dev
+          uv pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cpu
 
       - name: Run Ruff Linter
         run: |
