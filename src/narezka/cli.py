@@ -476,5 +476,124 @@ def eval_highlights_cmd(
     raise typer.Exit(code=0)
 
 
+@app.command(name="serve")
+def serve_cmd(
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Хост для запуска API сервера."),
+    port: int = typer.Option(8000, "--port", "-p", help="Порт для запуска API сервера."),
+    reload: bool = typer.Option(False, "--reload", help="Включить auto-reload при изменениях кода."),
+) -> None:
+    """Запустить асинхронный FastAPI REST API микросервис."""
+    import uvicorn
+
+    console.print(f"[bold green]Запуск Stream Highlight Harvester API[/bold green] на [cyan]http://{host}:{port}[/cyan]")
+    console.print(f"Интерактивная документация Swagger: [cyan]http://{host}:{port}/docs[/cyan]")
+    uvicorn.run("narezka.api.app:app", host=host, port=port, reload=reload)
+
+
+@app.command(name="demo")
+def demo_cmd(
+    output_dir: Path = typer.Option(Path("projects/demo_stream"), "--output", "-o", help="Папка для сохранения демо-проекта."),
+    open_browser: bool = typer.Option(False, "--open", help="Автоматически открыть сгенерированный отчёт в браузере."),
+) -> None:
+    """Запустить мгновенную 5-секундную демонстрацию пайплайна на синтетических данных (без необходимости скачивать VOD)."""
+    import json
+    import webbrowser
+
+    console.print("[bold cyan]════════════════════════════════════════════════════════════════════[/bold cyan]")
+    console.print("[bold yellow]★ Запуск Instant Zero-Data Demo (Синтетический поток) ★[/bold yellow]")
+    console.print("[bold cyan]════════════════════════════════════════════════════════════════════[/bold cyan]\n")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stages_dir = output_dir / "stages"
+    stages_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Create synthetic transcript
+    s04_dir = stages_dir / "s04_asr"
+    s04_dir.mkdir(parents=True, exist_ok=True)
+    segments = [
+        {"id": 1, "start": 5.0, "end": 9.0, "text": "Давайте пушить лонг, аккуратно заходим под смок.", "speaker": "streamer", "confidence": 0.98},
+        {"id": 2, "start": 9.5, "end": 14.0, "text": "Минус один на рампе, даю флешку, выходите!", "speaker": "streamer", "confidence": 0.99},
+        {"id": 3, "start": 14.2, "end": 18.0, "text": "Двоих забрал в соло! Как я попал вообще?!", "speaker": "streamer", "confidence": 0.95},
+        {"id": 4, "start": 18.5, "end": 24.0, "text": "Остался один в три на пленте, минирует!", "speaker": "streamer", "confidence": 0.97},
+        {"id": 5, "start": 24.5, "end": 30.0, "text": "Вытащил клатч! Эйс в соло на банане!", "speaker": "streamer", "confidence": 0.99},
+    ]
+    (s04_dir / "transcript.json").write_text(json.dumps({"segments": segments}, ensure_ascii=False, indent=2), encoding="utf-8")
+    (s04_dir / "meta.json").write_text(json.dumps({"stage": "s04_asr", "cache_key": "demo_s04"}, indent=2), encoding="utf-8")
+
+    # 2. Synthetic events & candidates
+    from narezka.models import Moment, MomentsDocument, RunMeta, VodMeta
+
+    moments = [
+        Moment(
+            id="demo-moment-01",
+            candidate_id="cand-001",
+            category="epic_play",
+            title="Безумный эйс и клатч в соло на банане",
+            reason="Стример в одиночку забирает весь раунд, яркая эмоциональная кульминация и вытащенный клатч 1 в 3.",
+            start=5.0,
+            end=30.0,
+            peak=18.0,
+            judge_score=9,
+            confidence=0.96,
+            final_score=0.92,
+            evidence={
+                "quotes": ["Двоих забрал в соло!", "Вытащил клатч! Эйс в соло на банане!"],
+                "tags": ["ace", "clutch", "multikill"],
+            },
+            flags=["highlight", "ace"],
+        ),
+        Moment(
+            id="demo-moment-02",
+            candidate_id="cand-002",
+            category="funny_joke",
+            title="Когда тактика тиммейта превзошла все ожидания",
+            reason="Смешной диалог стримера с чатом и нелепый рикошет смока.",
+            start=35.0,
+            end=55.0,
+            peak=44.0,
+            judge_score=8,
+            confidence=0.91,
+            final_score=0.85,
+            evidence={
+                "quotes": ["Давайте пушить лонг, аккуратно заходим под смок."],
+                "tags": ["humor", "fail"],
+            },
+            flags=["joke"],
+        ),
+    ]
+
+    doc = MomentsDocument(
+        schema_version="1.0",
+        vod=VodMeta(path=str((output_dir / "demo_vod.mp4").resolve()), duration_s=60.0, sha1_head="demo12345"),
+        run=RunMeta(config_hash="demo_hash", finished_at="2026-10-14T12:00:00Z"),
+        moments=moments,
+    )
+    (output_dir / "moments.json").write_text(doc.model_dump_json(indent=2), encoding="utf-8")
+
+    # 3. Render HTML report
+    from narezka.export.report_html import render_html_report
+    report_html = output_dir / "report.html"
+    render_html_report(project_dir=output_dir, output_path=report_html)
+
+    # 4. YouTube timestamps
+    yt_file = output_dir / "youtube_timestamps.txt"
+    yt_file.write_text(
+        "00:05 - Безумный эйс и клатч в соло на банане\n00:35 - Когда тактика тиммейта превзошла все ожидания\n",
+        encoding="utf-8",
+    )
+
+    console.print("[bold green]✓ Демо-пайплайн успешно сформирован за несколько секунд![/bold green]")
+    console.print(f"  • Папка проекта:   [cyan]{output_dir.resolve()}[/cyan]")
+    console.print(f"  • HTML дашборд:    [cyan]{report_html.resolve()}[/cyan]")
+    console.print(f"  • YouTube тайминги: [cyan]{yt_file.resolve()}[/cyan]")
+    console.print(f"  • Найдено клипов:   [bold green]{len(moments)}[/bold green]\n")
+
+    if open_browser:
+        webbrowser.open(report_html.resolve().as_uri())
+
+    raise typer.Exit(code=0)
+
+
 if __name__ == "__main__":
     app()
+
