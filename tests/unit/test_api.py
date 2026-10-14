@@ -97,3 +97,19 @@ def test_job_report_endpoint(client: TestClient, tmp_path: Path) -> None:
         ok_report = client.get(f"/api/v1/jobs/{job_id}/report")
         assert ok_report.status_code == 200
         assert "<html><body>Dashboard</body></html>" in ok_report.text
+
+
+def test_correlation_id_middleware(client: TestClient) -> None:
+    # Auto-generate request ID
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert "X-Request-ID" in resp.headers
+    assert "X-Process-Time-Ms" in resp.headers
+    assert float(resp.headers["X-Process-Time-Ms"]) >= 0.0
+
+    # Propagate provided request ID
+    custom_id = "trace-req-778899"
+    resp_custom = client.get("/health", headers={"X-Request-ID": custom_id})
+    assert resp_custom.status_code == 200
+    assert resp_custom.headers["X-Request-ID"] == custom_id
+

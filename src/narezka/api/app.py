@@ -22,6 +22,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from narezka import __version__
+from narezka.api.middleware import RequestCorrelationMiddleware
 from narezka.cli import build_pipeline_dag
 from narezka.config import load_config
 from narezka.project import Project
@@ -198,6 +199,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app_instance.add_middleware(RequestCorrelationMiddleware)
 
     @app_instance.get("/health", response_model=HealthResponse, tags=["Diagnostics"])
     async def health_check() -> HealthResponse:
