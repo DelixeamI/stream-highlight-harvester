@@ -52,7 +52,11 @@ class SileroVADBackend(VADBackend):
         import silero_vad
 
         logger.info("Запуск Silero VAD для файла %s...", audio_path.name)
-        model = silero_vad.load_silero_vad(onnx=self.onnx)
+        try:
+            model = silero_vad.load_silero_vad(onnx=self.onnx)
+        except Exception as exc:
+            logger.warning("Не удалось загрузить ONNX версию Silero VAD (%s), используем PyTorch версию...", exc)
+            model = silero_vad.load_silero_vad(onnx=False)
 
         wav = load_audio_tensor(audio_path, target_sr=16000)
 
