@@ -7,7 +7,7 @@
 [![PyTorch 2.6](https://img.shields.io/badge/PyTorch-2.6_CUDA_12.8-EE4C2C.svg?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Ollama](https://img.shields.io/badge/Inference-Ollama_Qwen3-black.svg?style=flat&logo=ollama&logoColor=white)](https://ollama.ai/)
 [![FastAPI](https://img.shields.io/badge/REST_API-FastAPI_Async-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/Tests-109_Passing_(100%25)-success.svg?style=flat)]()
+[![Tests](https://img.shields.io/badge/Tests-111_Passing_(100%25)-success.svg?style=flat)]()
 [![Code style: ruff](https://img.shields.io/badge/Code_Style-Ruff-000000.svg?style=flat)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](https://opensource.org/licenses/MIT)
 
@@ -289,12 +289,28 @@ The `compose.yaml` configuration reserves all NVIDIA GPU devices for both the AS
 
 ---
 
-## Testing & Quality Assurance
+## Developer Workflows & Makefile
 
-The codebase includes an exhaustive unit and integration test suite covering pipeline stages, DAG cache invalidation, GPU memory hygiene, FastAPI endpoints, and evaluation metrics:
+For developer ergonomics, standard automation tasks are orchestrated via `make`:
 
 ```bash
-# Run complete test suite (109 tests)
+make help          # View all available developer commands
+make test          # Run full pytest test suite (111 unit tests)
+make lint          # Run Ruff static checks and linter
+make format        # Reformat codebase with Ruff
+make demo          # Instant 2s zero-data demo with browser preview
+make openapi       # Export OpenAPI 3.1 specification to docs/openapi.json
+make docker-up     # Launch API + Ollama stack via docker compose
+```
+
+---
+
+## Testing & Quality Assurance
+
+The codebase includes an exhaustive unit and integration test suite covering pipeline stages, DAG cache invalidation, GPU memory hygiene, FastAPI endpoints, request correlation middleware, and evaluation metrics:
+
+```bash
+# Run complete test suite (111 tests)
 uv run pytest -v
 
 # Run code style & linting checks
@@ -302,7 +318,7 @@ uv run ruff check .
 ```
 
 ```text
-============================== 109 passed in 44.54s ==============================
+============================== 111 passed in 36.21s ==============================
 ```
 
 ### Evaluation Framework (`narezka eval`)
