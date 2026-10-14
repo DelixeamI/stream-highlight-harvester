@@ -21,7 +21,7 @@ class S10CandidatesStage(Stage):
     """Fuse all signals onto unified timeline and generate candidate highlight windows."""
 
     name = "s10_candidates"
-    code_version = "1.0.0"
+    code_version = "1.2.0"
     is_gpu_stage = False
 
     def compute_input_hash(self, project: Project) -> str:

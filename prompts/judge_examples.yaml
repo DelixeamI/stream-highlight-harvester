@@ -55,3 +55,28 @@ examples:
     start_seg: 1395
     end_seg: 1404
     needs_visual_check: false
+  - id: ex_05
+    candidate_id: c_0042
+    category: other
+    verdict: reject
+    score: 2
+    confidence: 0.95
+    title_ru: Рутинный фарм или AFK
+    reason_ru: Стример молчит или отошел, в игре обычный фарм крипов без ярких событий.
+    evidence_quotes: []
+    start_seg: 0
+    end_seg: 0
+    needs_visual_check: false
+  - id: ex_06
+    candidate_id: c_0055
+    category: multikill
+    verdict: reject
+    score: 3
+    confidence: 0.90
+    title_ru: События киллфида без участия стримера
+    reason_ru: Серия ликвидаций в киллфиде произошла у тиммейтов, стример в этот момент просто передвигается по карте.
+    evidence_quotes: []
+    start_seg: 0
+    end_seg: 0
+    needs_visual_check: false
+

@@ -49,23 +49,29 @@ def compute_pitch_track(
     if num_frames <= 0:
         num_frames = 1
 
-    # Convert audio to torch tensor
-    tensor_audio = torch.from_numpy(audio).unsqueeze(0).to(device)
-
+    chunk_samples = 120 * sample_rate
+    pitch_sample_list = []
     with torch.no_grad():
-        try:
-            pitch_raw = F.detect_pitch_frequency(
-                tensor_audio,
-                sample_rate=sample_rate,
-                frame_time=frame_time,
-                win_length=30,
-                freq_low=freq_low,
-                freq_high=freq_high,
-            )
-            pitch_samples = pitch_raw.squeeze(0).cpu().numpy()
-        except Exception as e:
-            logger.warning("TorchAudio detect_pitch_frequency failed: %s, falling back to zeros", e)
-            pitch_samples = np.zeros(int(total_duration / frame_time), dtype=np.float32)
+        for c_start in range(0, len(audio), chunk_samples):
+            c_audio = audio[c_start : c_start + chunk_samples]
+            tensor_chunk = torch.from_numpy(c_audio).unsqueeze(0).to(device)
+            try:
+                pitch_raw = F.detect_pitch_frequency(
+                    tensor_chunk,
+                    sample_rate=sample_rate,
+                    frame_time=frame_time,
+                    win_length=30,
+                    freq_low=freq_low,
+                    freq_high=freq_high,
+                )
+                pitch_sample_list.append(pitch_raw.squeeze(0).cpu().numpy())
+            except Exception as e:
+                logger.warning("TorchAudio detect_pitch_frequency failed on chunk: %s", e)
+                pitch_sample_list.append(
+                    np.zeros(int(len(c_audio) / (sample_rate * frame_time)), dtype=np.float32)
+                )
+
+    pitch_samples = np.concatenate(pitch_sample_list) if pitch_sample_list else np.array([], dtype=np.float32)
 
     samples_per_grid_frame = int(round(resolution_s / frame_time))
     f0_grid = np.zeros(num_frames, dtype=np.float32)

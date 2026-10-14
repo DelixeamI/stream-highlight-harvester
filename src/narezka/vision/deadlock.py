@@ -112,33 +112,36 @@ class DeadlockVisionPlugin(BaseGameVisionPlugin):
 
             prev_slot_sats = slot_sats
 
-            # 2. Center Kill / Hitmarker Indicator (x: 0.35..0.65, y: 0.15..0.45)
-            center = frame[int(h * 0.15):int(h * 0.45), int(w * 0.35):int(w * 0.65)]
-            c_hsv = cv2.cvtColor(center, cv2.COLOR_BGR2HSV)
-            c_red = cv2.inRange(c_hsv, (0, 140, 140), (10, 255, 255)) | cv2.inRange(c_hsv, (170, 140, 140), (180, 255, 255))
-            c_red_px = int(np.count_nonzero(c_red))
+            # 2. Top-Left Elimination Feed Banner (x: 0.0..0.22, y: 0.16..0.27)
+            kf = frame[int(h * 0.16):int(h * 0.27), :int(w * 0.22)]
+            kf_hsv = cv2.cvtColor(kf, cv2.COLOR_BGR2HSV)
+            kf_red = cv2.inRange(kf_hsv, (0, 140, 120), (10, 255, 255)) | cv2.inRange(kf_hsv, (170, 140, 120), (180, 255, 255))
+            kf_red_px = int(np.count_nonzero(kf_red))
+            kf_green = cv2.inRange(kf_hsv, (40, 60, 140), (90, 255, 255))
+            kf_green_px = int(np.count_nonzero(kf_green))
 
-            if c_red_px > 2000:
+            # A hero kill banner in Deadlock has a red victim block (>1200 px) and green soul bounty (>250 px)
+            if kf_red_px > 1200 and kf_green_px > 250:
                 if curr_t - last_center_kill_t > 3.0:
                     last_center_kill_t = curr_t
-                    # If not already recorded from hero deaths
                     if not confirmed_kills or (curr_t - confirmed_kills[-1]) > 2.5:
                         confirmed_kills.append(curr_t)
                         m, s = int(curr_t // 60), int(curr_t % 60)
-                        logger.info("🎯 [Deadlock Vision] Индикатор убийства по центру на %02d:%02d (%.1f с)", m, s, curr_t)
-                        evt_id = f"evt_dl_center_{int(curr_t * 10):06d}"
+                        logger.info("🎯 [Deadlock Vision] Киллфид: подтверждено устранение героя на %02d:%02d (%.1f с)", m, s, curr_t)
+                        evt_id = f"evt_dl_kf_{int(curr_t * 10):06d}"
                         events.append(
                             Event(
                                 id=evt_id,
-                                source="vision_hud",
+                                source="vision_killfeed",
                                 type="kill",
                                 start=round(curr_t, 2),
                                 end=round(curr_t + 1.0, 2),
                                 score=0.85,
                                 payload={
                                     "game": "deadlock",
-                                    "method": "center_kill_indicator",
-                                    "red_pixels": c_red_px,
+                                    "method": "top_left_killfeed",
+                                    "red_pixels": kf_red_px,
+                                    "green_pixels": kf_green_px,
                                 },
                             )
                         )

@@ -24,7 +24,7 @@ class S12ClipsStage(Stage):
     """Refine boundaries, rank moments, deduplicate with NMS, and generate exports & HTML report."""
 
     name = "s12_clips"
-    code_version = "1.1.0"
+    code_version = "1.2.0"
     is_gpu_stage = False
 
     def compute_input_hash(self, project: Project) -> str:

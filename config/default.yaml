@@ -40,15 +40,15 @@ timeline:
 
 features:
   weights:
-    loud_z: 0.20
+    loud_z: 0.10
     pitch_z: 0.05
-    laugh_p: 0.25
-    scream_p: 0.10
+    laugh_p: 0.15
+    scream_p: 0.05
     hype_lex: 0.10
     chat_rate_z: 0.15
     chat_laugh: 0.10
     kill: 0.30
-    semantic_flag: 0.20
+    semantic_flag: 0.25
   caps:
     loud_z: 5.0
     pitch_z: 4.0
@@ -96,7 +96,7 @@ judge:
     local:
       backend: openai
       base_url: "http://localhost:11434/v1"
-      model: "qwen3:8b"
+      model: "qwen2.5:14b"
       api_key_env: null
   max_candidates: 120
   max_cost_usd: 2.0

@@ -65,11 +65,20 @@ class FrameSampler:
         max_t = self.duration_s if end_s is None else min(self.duration_s, end_s)
         curr_t = float(start_s)
 
+        # Seek once at start if start_s > 0
+        if start_s > 0.0:
+            self._cap.set(cv2.CAP_PROP_POS_MSEC, start_s * 1000.0)
+
+        frame_interval = max(1, int(round(self.video_fps / self.target_fps))) if self.target_fps > 0 else 1
+        actual_step_s = frame_interval / self.video_fps
+
         while curr_t <= max_t:
-            # Set position in milliseconds
-            self._cap.set(cv2.CAP_PROP_POS_MSEC, curr_t * 1000.0)
             ret, frame = self._cap.read()
             if not ret:
                 break
             yield curr_t, frame
-            curr_t += self.step_s
+            # Skip subsequent frames in interval using fast grab() without full decoding
+            for _ in range(frame_interval - 1):
+                if not self._cap.grab():
+                    return
+            curr_t += actual_step_s

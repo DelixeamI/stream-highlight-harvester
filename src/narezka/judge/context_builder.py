@@ -75,9 +75,9 @@ def build_candidate_prompt_context(
                 label = evt.payload.get("label", "")
                 count = evt.payload.get("count", "")
                 phrase = evt.payload.get("phrase", "")
-                detail = label or (f"{count} убийства" if count else "убийство нескольких врагов")
+                detail = label or (f"{count} ликвидаций" if count else "серия ликвидаций")
                 phr_str = f" «{phrase}»" if phrase else ""
-                lines.append(f"{evt_t} MULTIKILL [{detail}]{phr_str} (подтверждено по killfeed/HUD!)")
+                lines.append(f"{evt_t} СОБЫТИЕ МАТЧА: серия ликвидаций [{detail}]{phr_str} (киллфид матча; проверь по действиям/голосу, участвовал ли стример)")
             elif evt.type == "clutch":
                 phrase = evt.payload.get("phrase", "")
                 lines.append(f"{evt_t} CLUTCH / EPIC PLAY «{phrase}» (клатч / затащил раунд)")
@@ -89,7 +89,7 @@ def build_candidate_prompt_context(
                 lines.append(f"{evt_t} GAMEPLAY FAIL «{phrase}» (промах / нелепый провал)")
             elif evt.type == "kill":
                 method = evt.payload.get("method", "killfeed")
-                lines.append(f"{evt_t} KILL стример → враг (подтверждено визуально по {method})")
+                lines.append(f"{evt_t} ЛИКВИДАЦИЯ В МАТЧЕ ({method}; проверь по действиям/голосу, участвовал ли стример)")
             elif evt.type == "laughter":
                 dur = evt.payload.get("duration_s", round(evt.end - evt.start, 1))
                 lines.append(f"{evt_t} LAUGHTER p={evt.score:.2f} ({dur} с)")

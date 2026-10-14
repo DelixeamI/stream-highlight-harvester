@@ -73,23 +73,72 @@ def validate_judge_verdict(
 
     if ungrounded_quotes:
         logger.warning(
-            "Candidate %s: quotes not grounded in transcript: %s",
+            "Candidate %s: quotes not grounded in transcript: %s -> HARD REJECT",
             candidate.id,
             ungrounded_quotes,
         )
         flags.append("ungrounded")
-        # Halve confidence as required by Section 10.4
-        verdict.confidence = round(verdict.confidence * 0.5, 2)
+        verdict.verdict = "reject"
+        verdict.score = 0.0
+        verdict.confidence = 0.0
+        verdict.reason_ru = f"Отклонено guardrail: цитаты не найдены в аудио ({', '.join(ungrounded_quotes)})"
 
-    # 3. Multikill category grounding: check for discrete event OR speech evidence
-    if verdict.category == "multikill":
-        has_mk_event = any(e.type == "multikill" for e in events if not (e.end < candidate.start or e.start > candidate.end))
-        mk_keywords = ["убил", "забрал", "минус", "раскидал", "развалил", "эйс", "ace"]
-        has_mk_speech = any(any(kw in q.lower() for kw in mk_keywords) for q in verdict.evidence_quotes)
-        if not (has_mk_event or has_mk_speech):
-            logger.info("Candidate %s: multikill category without MULTIKILL event or kill quotes, downgrading to epic_play", candidate.id)
-            verdict.category = "epic_play"
-            flags.append("multikill_downgraded")
+    # 3. Streamer speech analysis (anti-AFK, anti-routine, anti-tech-check)
+    streamer_segs = [
+        s for s in window_segs
+        if s.speaker == "streamer" and not getattr(s, "is_game_voice_line", False)
+    ]
+    streamer_text = " ".join(normalize_russian_text(s.text) for s in streamer_segs).strip()
+    streamer_words = streamer_text.split()
+    word_count = len(streamer_words)
+
+    tech_keywords = {
+        "слышно", "слышишь", "микрофон", "дискорд", "пофиксил", "поправил",
+        "настройки", "настроил", "отошел", "отойти", "пауза", "афк", "afk", "проверка", "тест"
+    }
+
+    # Anti-tech check: if streamer speaks only about technical issues/mic/settings
+    if verdict.verdict == "keep" and word_count > 0:
+        tech_words_count = sum(1 for w in streamer_words if any(k in w for k in tech_keywords))
+        if tech_words_count >= 2 and (tech_words_count / max(1, word_count)) > 0.40:
+            logger.info("Candidate %s: technical/mic check chatter detected (%s) -> REJECT", candidate.id, streamer_text)
+            verdict.verdict = "reject"
+            verdict.score = 1.0
+            verdict.confidence = 0.9
+            flags.append("tech_check_rejected")
+            verdict.reason_ru = "Отклонено guardrail: технический разговор / проверка микрофона / AFK"
+
+    # Anti-AFK & Category grounding:
+    if verdict.verdict == "keep":
+        has_clutch = any(e.type == "clutch" for e in events if not (e.end < candidate.start or e.start > candidate.end))
+        has_laughter = any(e.type == "laughter" and e.score >= 0.75 for e in events if not (e.end < candidate.start or e.start > candidate.end))
+
+        # Can't have a joke or funny reaction if streamer spoke < 3 words and no laughter
+        if verdict.category in ["funny_joke", "funny_reaction"]:
+            if word_count < 3 and not has_laughter:
+                logger.info("Candidate %s: funny category with no speech (< 3 words) or laughter -> REJECT", candidate.id)
+                verdict.verdict = "reject"
+                verdict.score = 2.0
+                flags.append("afk_funny_rejected")
+                verdict.reason_ru = "Отклонено guardrail: нет речи или реакции стримера"
+
+        # Multikill grounding: must have personal combat context
+        elif verdict.category == "multikill":
+            mk_keywords = ["убил", "забрал", "минус", "раскидал", "развалил", "эйс", "ace", "добил", "помог", "убили", "минусанул", "фраг"]
+            has_mk_speech = any(any(kw in w for kw in mk_keywords) for w in streamer_words)
+            has_mk_quotes = any(any(kw in q.lower() for kw in mk_keywords) for q in verdict.evidence_quotes)
+
+            # If streamer said nothing or is AFK, match killfeed events are NOT personal multikills!
+            if word_count < 3 and not (has_clutch or has_mk_speech):
+                logger.info("Candidate %s: multikill event without streamer speech or action -> REJECT (AFK/creep farming)", candidate.id)
+                verdict.verdict = "reject"
+                verdict.score = 2.0
+                flags.append("afk_multikill_rejected")
+                verdict.reason_ru = "Отклонено guardrail: стример молчит во время событий киллфида матча"
+            elif not (has_mk_speech or has_mk_quotes):
+                logger.info("Candidate %s: multikill category without kill speech, downgrading to epic_play", candidate.id)
+                verdict.category = "epic_play"
+                flags.append("multikill_downgraded")
 
     # 4. Title sanitization (clean swears, robotic templates, max 60 chars)
     clean_title = verdict.title_ru.strip(" \t\n\r\"'«»!?,.")

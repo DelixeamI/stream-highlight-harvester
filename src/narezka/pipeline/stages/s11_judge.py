@@ -22,7 +22,7 @@ class S11JudgeStage(Stage):
     """Run LLM Judge to evaluate candidate highlight windows."""
 
     name = "s11_judge"
-    code_version = "1.0.0"
+    code_version = "1.2.0"
     is_gpu_stage = False
 
     def compute_input_hash(self, project: Project) -> str:

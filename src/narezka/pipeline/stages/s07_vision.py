@@ -24,7 +24,7 @@ class S07VisionStage(Stage):
     """Extract visual highlights, personal kills, multikills, and HUD events from video frames."""
 
     name = "s07_vision"
-    code_version = "1.1.0"
+    code_version = "1.2.0"
     is_gpu_stage = False
 
     def compute_input_hash(self, project: Project) -> str:

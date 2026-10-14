@@ -175,8 +175,10 @@ def test_validate_judge_verdict_hallucinated_quote():
 
     sanitized, flags = validate_judge_verdict(verdict, cand, segments, events)
     assert "ungrounded" in flags
-    # Confidence should be halved from 0.8 to 0.4
-    assert sanitized.confidence == pytest.approx(0.40)
+    # Hard reject on hallucinated quote
+    assert sanitized.verdict == "reject"
+    assert sanitized.score == 0.0
+    assert sanitized.confidence == 0.0
 
 
 def test_validate_judge_verdict_grounded_quote():
@@ -306,3 +308,46 @@ def test_build_candidate_prompt_context():
     assert "Минус три, я гений!" in prompt_ctx
     assert "[seg 0005" in prompt_ctx
     assert "CHAT_HYPE" in prompt_ctx
+
+
+def test_validate_judge_verdict_anti_afk_and_tech_check():
+    cand = Candidate(id="c_0099", start=10.0, end=40.0, peak=25.0, signal_score=0.7)
+    
+    # 1. Tech check rejection
+    tech_segs = [
+        Segment(id=1, start=12.0, end=18.0, text="Слышно меня в дискорде? Микрофон поправил", speaker="streamer"),
+    ]
+    verdict = JudgeVerdict(
+        candidate_id="c_0099",
+        verdict="keep",
+        category="other",
+        title_ru="Настройка микрофона",
+        reason_ru="Стример говорит про микрофон",
+        start_seg=1,
+        end_seg=1,
+        score=7,
+        confidence=0.8,
+        evidence_quotes=["Слышно меня в дискорде"],
+    )
+    sanitized, flags = validate_judge_verdict(verdict, cand, tech_segs, [])
+    assert sanitized.verdict == "reject"
+    assert "tech_check_rejected" in flags
+
+    # 2. AFK multikill rejection (silent streamer during match killfeed)
+    silent_segs = []  # No speech
+    mk_verdict = JudgeVerdict(
+        candidate_id="c_0099",
+        verdict="keep",
+        category="multikill",
+        title_ru="Серия фрагов",
+        reason_ru="Мультикилл в игре",
+        start_seg=0,
+        end_seg=0,
+        score=8,
+        confidence=0.9,
+        evidence_quotes=[],
+    )
+    sanitized_mk, mk_flags = validate_judge_verdict(mk_verdict, cand, silent_segs, [])
+    assert sanitized_mk.verdict == "reject"
+    assert "afk_multikill_rejected" in mk_flags
+
