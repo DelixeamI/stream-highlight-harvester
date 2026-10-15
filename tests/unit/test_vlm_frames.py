@@ -1,6 +1,8 @@
-import numpy as np
-import cv2
 from pathlib import Path
+
+import cv2
+import numpy as np
+
 from narezka.judge.frames import extract_candidate_keyframes
 
 

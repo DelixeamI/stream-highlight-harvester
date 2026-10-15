@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import platform
 import shutil
+import tempfile
 import time
 import uuid
 from pathlib import Path
@@ -28,6 +30,68 @@ from narezka.config import load_config
 from narezka.project import Project
 
 logger = logging.getLogger("narezka.api")
+
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mkv", ".flv", ".mov", ".avi", ".ts", ".webm"}
+ALLOWED_CHAT_EXTENSIONS = {".json"}
+
+
+def get_allowed_vod_roots() -> list[Path]:
+    """Retrieve whitelisted canonical root directories for VOD and chat file access."""
+    roots: list[Path] = [
+        Path.cwd().resolve(),
+        Path(tempfile.gettempdir()).resolve(),
+    ]
+    env_dirs = os.getenv("ALLOWED_VOD_DIRS", "")
+    if env_dirs:
+        for p in env_dirs.split(","):
+            p_strip = p.strip()
+            if p_strip:
+                roots.append(Path(p_strip).resolve())
+    common_vods = Path("D:/LLM PROJECT/Gemini/VODs")
+    if common_vods.is_dir():
+        roots.append(common_vods.resolve())
+    return roots
+
+
+def validate_file_path(path_str: str, allowed_extensions: set[str], field_name: str) -> Path:
+    """Validate that path exists, has allowed extension, and resides within whitelisted directories."""
+    raw_path = Path(path_str)
+    try:
+        resolved = raw_path.resolve()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid {field_name} path format: {exc}",
+        ) from exc
+
+    if resolved.suffix.lower() not in allowed_extensions:
+        allowed_list = ", ".join(sorted(allowed_extensions))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{field_name} must have one of allowed extensions ({allowed_list}): {resolved.name}",
+        )
+
+    if not resolved.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{field_name} does not exist: {path_str}",
+        )
+
+    allowed_roots = get_allowed_vod_roots()
+    is_allowed = any(resolved.is_relative_to(root) for root in allowed_roots)
+    if not is_allowed:
+        logger.warning(
+            "Access to %s denied by whitelist policy: %s (allowed roots: %s)",
+            field_name,
+            resolved,
+            [str(r) for r in allowed_roots],
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access to {field_name} is forbidden: file must reside within allowed directories.",
+        )
+
+    return resolved
 
 
 # --- Pydantic Schemas ---
@@ -228,20 +292,17 @@ def create_app() -> FastAPI:
         tags=["Jobs"],
     )
     async def submit_job(req: JobSubmitRequest, background_tasks: BackgroundTasks) -> JobStatusResponse:
-        """Submit a VOD analysis job for background execution."""
-        vod_path = Path(req.video_path)
-        if not vod_path.is_file():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Video file does not exist: {req.video_path}",
-            )
+        """Submit a VOD analysis job for background execution with security validation."""
+        vod_path = validate_file_path(req.video_path, ALLOWED_VIDEO_EXTENSIONS, "video_path")
+        if req.chat_path:
+            validate_file_path(req.chat_path, ALLOWED_CHAT_EXTENSIONS, "chat_path")
 
         job_id = uuid.uuid4().hex[:12]
         job = JobRecord(job_id=job_id, request=req)
         _jobs[job_id] = job
 
         background_tasks.add_task(asyncio.to_thread, _execute_job_sync, job)
-        logger.info("Enqueued job %s for video %s", job_id, req.video_path)
+        logger.info("Enqueued job %s for video %s", job_id, vod_path)
         return job.to_response()
 
     @app_instance.get("/api/v1/jobs", response_model=list[JobStatusResponse], tags=["Jobs"])

@@ -2,14 +2,16 @@
 
 **Дата актуализации:** Октябрь 2026 г.  
 **Платформа:** Windows 11 (PowerShell), NVIDIA GeForce RTX 5070 (12 GB VRAM, sm_120, CUDA 13.3), Python 3.12 (`uv`).  
-**Статус тестов:** **113 / 113 passed (100%)**, линтер `ruff` — 0 ошибок.
+**Статус тестов:** **115 / 115 passed (100%)**, линтер `ruff` — 0 ошибок.
 
 ---
 
 ## 1. Где что находится (Краткая навигация)
 
 * **Исходное техническое задание:** [`TZ_Narezka.md`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/TZ_Narezka.md) (архитектура, формулы $S(t)$, схемы данных).
+* **Сводные бенчмарки и реальные тайминги:** [`docs/benchmarks/BENCHMARKS.md`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/docs/benchmarks/BENCHMARKS.md) (замеры из `meta.json` по стадиям и методология скорости).
 * **Конфигурация по умолчанию:** [`config/default.yaml`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/config/default.yaml) (профиль облачного VLM `gemini-3.1-flash-lite` и локального SLM `qwen2.5:14b`).
+* **Безопасный REST API:** [`src/narezka/api/app.py`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/src/narezka/api/app.py) (белый список каталогов VOD и расширений).
 * **Модуль Video-VLM фреймов:** [`src/narezka/judge/frames.py`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/src/narezka/judge/frames.py) (нарезка 8 кадров 360p JPEG base64).
 * **Мультимодальный промпт VLM:** [`prompts/judge_vlm_ru.md`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/prompts/judge_vlm_ru.md) (правила Visual Grounding и Personal Agency).
 * **Учебное портфолио для собеседования:** [`INTERVIEW_PORTFOLIO.html`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/INTERVIEW_PORTFOLIO.html) и [`INTERVIEW_PORTFOLIO.md`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/INTERVIEW_PORTFOLIO.md).

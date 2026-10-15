@@ -312,7 +312,7 @@ def test_build_candidate_prompt_context():
 
 def test_validate_judge_verdict_anti_afk_and_tech_check():
     cand = Candidate(id="c_0099", start=10.0, end=40.0, peak=25.0, signal_score=0.7)
-    
+
     # 1. Tech check rejection
     tech_segs = [
         Segment(id=1, start=12.0, end=18.0, text="Слышно меня в дискорде? Микрофон поправил", speaker="streamer"),

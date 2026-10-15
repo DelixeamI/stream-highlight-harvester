@@ -40,7 +40,6 @@ def extract_candidate_keyframes(
         logger.warning("VOD file not found for frame extraction: %s", vod_path)
         return []
 
-    duration = max(1.0, end_s - start_s)
     # Compute timestamps with extra sample right around the peak
     raw_timestamps = np.linspace(start_s + 0.5, end_s - 0.5, num_frames).tolist()
     # Ensure peak is represented

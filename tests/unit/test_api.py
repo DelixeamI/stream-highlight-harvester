@@ -133,3 +133,29 @@ def test_cli_openapi_export(tmp_path: Path) -> None:
     assert "/api/v1/jobs" in spec["paths"]
 
 
+def test_submit_job_forbidden_path_outside_whitelist(client: TestClient, tmp_path: Path) -> None:
+    video_file = tmp_path / "test_vod.mp4"
+    video_file.write_text("fake video content", encoding="utf-8")
+
+    with patch("narezka.api.app.get_allowed_vod_roots", return_value=[Path("C:/strictly_allowed_folder")]):
+        resp = client.post(
+            "/api/v1/jobs",
+            json={"video_path": str(video_file)},
+        )
+        assert resp.status_code == 403
+        assert "forbidden" in resp.json()["detail"].lower()
+
+
+def test_submit_job_invalid_extension(client: TestClient, tmp_path: Path) -> None:
+    bad_file = tmp_path / "malicious.exe"
+    bad_file.write_text("binary", encoding="utf-8")
+
+    resp = client.post(
+        "/api/v1/jobs",
+        json={"video_path": str(bad_file)},
+    )
+    assert resp.status_code == 400
+    assert "allowed extensions" in resp.json()["detail"].lower()
+
+
+

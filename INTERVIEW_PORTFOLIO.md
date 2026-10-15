@@ -97,7 +97,7 @@
 * **Система эвалюации ([`src/narezka/eval/`](file:///d:/LLM%20PROJECT/Gemini/RU_STREAM_PARSER_V2/src/narezka/eval/)):**
   * `ASREvaluator`: замер качества транскрипции (WER и CER) через `jiwer` с нормализацией русского текста.
   * `HighlightEvaluator`: оценка качества детекции моментов (Precision, Recall@N, IoU границ).
-* **Тестирование:** **113 unit-тестов** на `pytest` (100% pass, 27 тестовых файлов), полное покрытие VLM-фреймов, кэша, GPU-гигиены и Pydantic-контрактов.
+* **Тестирование:** **115 unit-тестов** на `pytest` (100% pass, 27 тестовых файлов), полное покрытие VLM-фреймов, безопасности API (white-listing путей), кэша, GPU-гигиены и Pydantic-контрактов.
 
 ---
 

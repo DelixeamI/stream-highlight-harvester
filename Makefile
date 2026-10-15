@@ -14,7 +14,7 @@ help:
 	@echo "  make clean         Remove cache files and temporary build artifacts"
 
 install:
-	uv sync --extra dev
+	uv sync --all-extras
 
 lint:
 	uv run ruff check .

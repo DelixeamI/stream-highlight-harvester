@@ -24,8 +24,9 @@ dependencies = [
     "psutil>=5.9.0",
     "pyloudnorm>=0.2.0",
     "jinja2>=3.1.0",
-    "openai>=3.19.2",
-    "anthropic>=1.8.0",
+    "httpx>=0.28.0",
+    "openai>=1.50.0",
+    "anthropic>=0.40.0",
     "opencv-python>=4.10.0",
     "fastapi>=0.115.0",
     "uvicorn>=0.34.0",
@@ -36,6 +37,9 @@ dependencies = [
     "rapidfuzz>=3.0.0",
     "tqdm>=4.66.0",
     "onnxruntime>=1.19.0",
+    "faster-whisper>=1.0.0",
+    "silero-vad>=5.1.0",
+    "demucs>=4.0.0",
 ]
 
 [project.optional-dependencies]
