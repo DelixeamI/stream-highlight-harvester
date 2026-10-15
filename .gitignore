@@ -61,10 +61,9 @@ $RECYCLE.BIN/
 
 # Internal documentation & private notes (local only)
 TZ_Narezka.md
-PROJECT_STATUS.md
-INTERVIEW_PORTFOLIO.*
 *.pdf
 *.html
+!INTERVIEW_PORTFOLIO.html
 scratch/
 tmp_clips/
 test_env/

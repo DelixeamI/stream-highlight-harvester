@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Учебник по проекту «Нарезка»: Руководство для Middle AI/LLM Engineer</title>
+<style>
+:root {
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-sidebar: #0f172a;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --border-subtle: #f1f5f9;
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --primary-border: #c7d2fe;
+    --emerald-bg: #ecfdf5;
+    --emerald-text: #065f46;
+    --emerald-border: #a7f3d0;
+    --amber-bg: #fffbeb;
+    --amber-text: #92400e;
+    --amber-border: #fde68a;
+    --blue-bg: #eff6ff;
+    --blue-text: #1e40af;
+    --blue-border: #bfdbfe;
+    --purple-bg: #faf5ff;
+    --purple-text: #6b21a8;
+    --purple-border: #e9d5ff;
+    --rose-bg: #fff1f2;
+    --rose-text: #9f1239;
+    --rose-border: #fecdd3;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-page);
+    line-height: 1.6;
+    font-size: 15px;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Layout (Учебник) */
+.sidebar {
+    width: 290px;
+    background-color: var(--bg-sidebar);
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    border-right: 1px solid #1e293b;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 24px 20px 18px 20px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.sidebar-logo-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #6366f1, #3b82f6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.sidebar-logo-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+}
+
+.sidebar-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.sidebar-nav {
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.nav-heading {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #64748b;
+    padding: 12px 10px 6px 10px;
+}
+
+.chapter-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: all 0.15s ease;
+}
+
+.chapter-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.chapter-btn.active {
+    color: #ffffff;
+    background: var(--primary);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+}
+
+.chapter-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: inherit;
+    font-weight: 700;
+}
+
+.sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #1e293b;
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Main Content Area */
+.main-wrapper {
+    margin-left: 290px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.top-bar {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    backdrop-filter: blur(8px);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.breadcrumbs {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumbs strong {
+    color: var(--text-primary);
+}
+
+.top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-pill {
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    border: 1px solid var(--primary-border);
+}
+
+.content-container {
+    max-width: 960px;
+    padding: 36px 36px 64px 36px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Chapter Sections Display */
+.chapter-content {
+    display: none;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.chapter-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typography & Hero */
+.chapter-hero {
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1.5px solid var(--border-color);
+}
+
+.chapter-num {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--primary);
+    margin-bottom: 6px;
+    display: inline-block;
+}
+
+.chapter-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+    letter-spacing: -0.5px;
+}
+
+.chapter-lead {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Pitch & Callouts */
+.pitch-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1.5px solid #a7f3d0;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin: 20px 0;
+}
+
+.pitch-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: #065f46;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pitch-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #14532d;
+    margin: 0;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+}
+
+.metric-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+}
+
+.metric-card-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.metric-card-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.metric-card-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Skill Stack & Speech Boxes */
+.skills-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.skill-item-card {
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.skill-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.skill-item-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.skill-num {
+    background: var(--primary);
+    color: #ffffff;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.skill-item-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.skill-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.pill-core { background: var(--blue-bg); color: var(--blue-text); border: 1px solid var(--blue-border); }
+.pill-llm { background: var(--purple-bg); color: var(--purple-text); border: 1px solid var(--purple-border); }
+.pill-eval { background: var(--emerald-bg); color: var(--emerald-text); border: 1px solid var(--emerald-border); }
+.pill-perf { background: var(--amber-bg); color: var(--amber-text); border: 1px solid var(--amber-border); }
+
+.skill-impl-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.skill-file-badge {
+    font-family: Consolas, "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+/* Speech Box */
+.speech-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    margin-top: 10px;
+}
+
+.speech-box-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    margin-bottom: 6px;
+}
+
+.speech-box-text {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Tricky Questions (Каверзные вопросы) */
+.tricky-card {
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease;
+}
+
+.tricky-card:hover {
+    border-color: var(--primary-border);
+}
+
+.tricky-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.tricky-badge {
+    background: var(--rose-bg);
+    color: var(--rose-text);
+    border: 1px solid var(--rose-border);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.tricky-question {
+    font-size: 16.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.tricky-skill-ref {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.tricky-answer-box {
+    background: #f8fafc;
+    border-left: 3.5px solid #059669;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #1e293b;
+}
+
+.tricky-answer-header {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #059669;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tricky-insight {
+    margin-top: 12px;
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--amber-text);
+}
+
+.tricky-insight strong {
+    color: #78350f;
+}
+
+/* Terminal View */
+.terminal-window {
+    background: #090d16;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 18px 0;
+    box-shadow: var(--shadow-md);
+}
+
+.terminal-header {
+    background: #111827;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #1f2937;
+}
+
+.terminal-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+.dot-red { background: #ef4444; }
+.dot-yellow { background: #f59e0b; }
+.dot-green { background: #10b981; }
+
+.terminal-title {
+    font-family: Consolas, "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-left: 6px;
+}
+
+.terminal-body {
+    padding: 18px 20px;
+    font-family: Consolas, "JetBrains Mono", Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #e2e8f0;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.t-cyan { color: #38bdf8; font-weight: 600; }
+.t-green { color: #4ade80; font-weight: 600; }
+.t-yellow { color: #fde047; font-weight: 600; }
+.t-purple { color: #c084fc; font-weight: 600; }
+.t-rose { color: #fb7185; font-weight: 600; }
+
+/* Deep Dive & Roadmap */
+.deep-dive-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-sm);
+}
+
+.deep-dive-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.deep-dive-num {
+    background: var(--primary);
+    color: #ffffff;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.deep-dive-title {
+    font-size: 16.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.deep-dive-problem {
+    background: var(--amber-bg);
+    border-left: 3px solid #f59e0b;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13.5px;
+    color: var(--amber-text);
+    margin-bottom: 12px;
+}
+
+.deep-dive-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.deep-dive-list li {
+    margin-bottom: 6px;
+}
+
+/* STAR Cards */
+.star-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.star-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.star-badge {
+    background: #3b82f6;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.star-question {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.star-body {
+    padding: 20px 22px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+.star-step {
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 2px solid var(--primary-border);
+}
+
+.star-step strong {
+    color: var(--primary);
+    font-size: 13.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* Chapter Bottom Pagination Bar */
+.chapter-footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--border-color);
+}
+
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.page-btn-prev {
+    background: #ffffff;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.page-btn-prev:hover {
+    background: var(--bg-page);
+    color: var(--text-primary);
+}
+
+.page-btn-next {
+    background: var(--primary);
+    color: #ffffff;
+    border: 1px solid var(--primary);
+}
+
+.page-btn-next:hover {
+    background: var(--primary-hover);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .main-wrapper {
+        margin-left: 0;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Left Sidebar / Table of Contents -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">N</div>
+            <div class="sidebar-logo-title">Учебник по проекту</div>
+        </div>
+        <div class="sidebar-subtitle">stream-highlight-harvester • Middle AI/LLM Guide</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-heading">Главы учебника</div>
+
+        <button class="chapter-btn active" onclick="showChapter('ch-intro')" id="btn-ch-intro">
+            <span class="chapter-badge">0</span>
+            <span>Введение &amp; Pitch</span>
+        </button>
+
+        <button class="chapter-btn" onclick="showChapter('ch-skills')" id="btn-ch-skills">
+            <span class="chapter-badge">1</span>
+            <span>Карта навыков (40–60с)</span>
+        </button>
+
+        <button class="chapter-btn" onclick="showChapter('ch-tricky')" id="btn-ch-tricky">
+            <span class="chapter-badge">2</span>
+            <span>Каверзные вопросы</span>
+        </button>
+
+        <button class="chapter-btn" onclick="showChapter('ch-pipeline')" id="btn-ch-pipeline">
+            <span class="chapter-badge">3</span>
+            <span>Пайплайн DAG (14 стадий)</span>
+        </button>
+
+        <button class="chapter-btn" onclick="showChapter('ch-architecture')" id="btn-ch-architecture">
+            <span class="chapter-badge">4</span>
+            <span>Инженерия LLM &amp; Guardrails</span>
+        </button>
+
+        <button class="chapter-btn" onclick="showChapter('ch-prod-star')" id="btn-ch-prod-star">
+            <span class="chapter-badge">5</span>
+            <span>Scale to Prod &amp; STAR</span>
+        </button>
+    </nav>
+
+    <div class="sidebar-footer">
+        <span>Статус: 100% готов к интервью</span>
+        <span>v2.1</span>
+    </div>
+</aside>
+
+<!-- Main Reading Workspace -->
+<div class="main-wrapper">
+
+    <!-- Top Sticky Header -->
+    <header class="top-bar">
+        <div class="breadcrumbs">
+            <span>Учебник</span> / <strong id="current-chapter-crumb">Глава 0: Введение &amp; Pitch</strong>
+        </div>
+        <div class="top-bar-actions">
+            <span class="progress-pill" id="chapter-indicator">Глава 1 из 6</span>
+        </div>
+    </header>
+
+    <div class="content-container">
+
+        <!-- ========================================== -->
+        <!-- ГЛАВА 0: ВВЕДЕНИЕ & PITCH                  -->
+        <!-- ========================================== -->
+        <article class="chapter-content active" id="ch-intro">
+            <div class="chapter-hero">
+                <span class="chapter-num">Глава 0 • Обзор</span>
+                <h1 class="chapter-title">Введение &amp; Архитектурный Pitch</h1>
+                <p class="chapter-lead">
+                    Быстрый вход в контекст проекта, ключевая проблема длинных видео и готовая речь Elevator Pitch на 30 секунд.
+                </p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-card-label">Тестирование</div>
+                    <div class="metric-card-value">113 / 113 Pass</div>
+                    <div class="metric-card-desc">100% покрытие DAG, VLM-кадров и GPU</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-card-label">Стоимость API</div>
+                    <div class="metric-card-value">$0.00 / стрим</div>
+                    <div class="metric-card-desc">Local Ollama Qwen 14B / Gemini Free Tier</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-card-label">Скорость анализа</div>
+                    <div class="metric-card-value">6.5x Real-Time</div>
+                    <div class="metric-card-desc">3.5-часовой стрим за 28 минут</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-card-label">Мультимодальность</div>
+                    <div class="metric-card-value">Video-VLM + CV</div>
+                    <div class="metric-card-desc">8 keyframes 360p на момент (~300 KB)</div>
+                </div>
+            </div>
+
+            <div class="pitch-card">
+                <div class="pitch-header">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    Elevator Pitch (30 секунд на вопрос «Расскажи о проекте»)
+                </div>
+                <p class="pitch-text">
+                    «<strong>Нарезка</strong> — это продакшн-ориентированный мультимодальный AI-пайплайн для автоматического поиска хайлайтов и монтажа клипов из длинных игровых стримов (2–8 часов). 
+                    Вместо наивного отбора по звуку (где крик при падении с лестницы принимается за хайлайт) или дорогого скармливания гигабайтов видео в облако (~$40 за стрим), мы применили <strong>двухконтурную архитектуру</strong>: 
+                    детерминированные легковесные ML-модели (Whisper ASR с фонетическим словарем, Silero VAD, CV-анализ и спектральный аудиоанализ) фильтруют 98% рутины и строят график интереса <strong>$S(t)$</strong>, 
+                    а <strong>мультимодальный Video-VLM арбитр (Gemini 3.1 Flash Lite / Qwen 2.5)</strong> получает по 8 ключевых кадров момента, "глазами" верифицирует киллфид и дуэли от первого лица, 
+                    отсекает ложные срабатывания с помощью Pydantic Structured Outputs и Grounding-фильтра, отдавая проверенные моменты на аппаратный <strong>NVENC-рендеринг при нулевых затратах ($0.00)</strong>».
+                </p>
+            </div>
+
+            <div class="chapter-footer-nav">
+                <div></div>
+                <button class="page-btn page-btn-next" onclick="showChapter('ch-skills')">
+                    Следующая глава: Карта навыков →
+                </button>
+            </div>
+        </article>
+
+        <!-- ========================================== -->
+        <!-- ГЛАВА 1: КАРТА НАВЫКОВ (РЕЧЬ НА 40-60с)     -->
+        <!-- ========================================== -->
+        <article class="chapter-content" id="ch-skills">
+            <div class="chapter-hero">
+                <span class="chapter-num">Глава 1 • Стек &amp; Презентация</span>
+                <h1 class="chapter-title">Карта навыков: Питчи на 40–60 секунд</h1>
+                <p class="chapter-lead">
+                    10 ключевых областей из требований вакансий Middle AI / LLM Engineer. У каждого пункта есть готовая формулировка для устного ответа.
+                </p>
+            </div>
+
+            <div class="skills-stack">
+                <!-- Skill 1 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">1</span>
+                            <h3 class="skill-item-name">Python / Backend Architecture &amp; DAG</h3>
+                        </div>
+                        <span class="skill-pill pill-core">Core Backend</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Python 3.12, strict typing, Pydantic v2, модульный DAG engine, SHA-256 кэширование стадий.</span>
+                        <span class="skill-file-badge">src/narezka/pipeline/dag.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (45 секунд)</div>
+                        <p class="speech-box-text">
+                            «В проекте используется <strong>Python 3.12</strong> со строгой типизацией. Архитектурно я построил детерминированный движок <strong>DAG-пайплайна из 14 изолированных стадий</strong>. Вместо спагетти-скрипта каждая стадия — это отдельный класс с контрактом на вход и выход. Главная инженерная фишка — <strong>контентно-адресуемое кэширование</strong>: перед запуском стадии вычисляется SHA-256 хэш входных данных, параметров конфига и версии кода стадии. Если стрим уже обрабатывался, тяжелые нейросетевые стадии (ASR, Demucs) мгновенно берутся из кэша. Это экономит часы вычислений и позволяет безопасно перезапускать пайплайн при любых сбоях».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 2 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">2</span>
+                            <h3 class="skill-item-name">Pydantic v2 / Structured Output</h3>
+                        </div>
+                        <span class="skill-pill pill-llm">LLM Engineering</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>JSON Schema на лету, контракт <code>JudgeVerdict</code>, цикл самокоррекции с внедрением ошибок в промпт.</span>
+                        <span class="skill-file-badge">src/narezka/llm/schemas.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (50 секунд)</div>
+                        <p class="speech-box-text">
+                            «Вся работа с данными и LLM построена на <strong>Pydantic v2</strong>. Мы не парсим ответы модели регулярками: через <code>JudgeVerdict.model_json_schema()</code> на лету генерируется строгая JSON-схема и передается в API. Если локальная модель ошибается в синтаксисе, срабатывает <strong>цикл самокоррекции с лимитом <code>max_retries=2</code></strong>: ошибка валидации Pydantic внедряется в следующий промпт модели, и она исправляется на лету. А если за 3 попытки модель так и не смогла выдать валидный JSON, срабатывает <strong>Graceful Degradation</strong>: фрагмент бракуется с кодом <code>llm_error</code>, и пайплайн спокойно продолжает работу без падения сервиса».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 3 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">3</span>
+                            <h3 class="skill-item-name">LLM &amp; Video-VLM Client, Proxy Routing &amp; Resilience</h3>
+                        </div>
+                        <span class="skill-pill pill-llm">LLM / VLM Client</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Клиент OpenAI/Anthropic/Gemini VLM (image_url) + Ollama, сетевой обход блокировок, exponential backoff (503/429).</span>
+                        <span class="skill-file-badge">src/narezka/llm/client.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (50 секунд)</div>
+                        <p class="speech-box-text">
+                            «Я спроектировал <strong>унифицированный мультимодальный клиент</strong>, работающий как с локальным инференсом (Ollama Qwen 2.5), так и с передовыми Video-VLM (Google Gemini 3.1 Flash Lite через <code>image_url</code> протокол). В клиенте решены критические проблемы продакшна: <strong>автоматическая маршрутизация через локальный прокси</strong> для обхода региональных геоблокировок API, <strong>экспоненциальный retry-backoff</strong> при спайках нагрузки Google (HTTP 503 и 429), изоляция синтаксических ошибок от сетевых сбоев и персистентное дисковое SHA-256 кэширование ответов. Переключение между локальной SLM и облачной VLM осуществляется одним флагом в конфиге».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 4 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">4</span>
+                            <h3 class="skill-item-name">Hybrid AI Architecture: Local SLM (Qwen 14B) &amp; Cloud VLM</h3>
+                        </div>
+                        <span class="skill-pill pill-llm">Hybrid AI</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Ollama Qwen 2.5 14B на GPU (RTX 5070) для текста + Gemini 3.1 Flash Lite для визуальной верификации кадров ($0.00).</span>
+                        <span class="skill-file-badge">config/default.yaml</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (45 секунд)</div>
+                        <p class="speech-box-text">
+                            «В проекте реализована <strong>гибридная архитектура</strong>. Для текстовой обработки и фонового семантического сканирования транскриптов используется локальная модель <code>qwen2.5:14b</code> в квантовании Q4_K_M через Ollama — это дает полную приватность и независимость от сети. А для финального арбитража хайлайтов подключается <strong>Gemini 3.1 Flash Lite Video-VLM</strong>, которая за доли секунды "просматривает" кадры момента по бесплатному тиру API ($0.00). Это сочетает нулевую стоимость с качеством топовых коммерческих мультимодальных моделей».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 5 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">5</span>
+                            <h3 class="skill-item-name">Dense Embeddings, Semantic Search &amp; RAG</h3>
+                        </div>
+                        <span class="skill-pill pill-llm">Embeddings / RAG</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Семантический скан 8-минутных окон транскрипта, поиск иронии, сарказма и историй, плотные векторы bge-m3.</span>
+                        <span class="skill-file-badge">src/narezka/pipeline/stages/s09_semantic_scan.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (50 секунд)</div>
+                        <p class="speech-box-text">
+                            «Семантический анализ в проекте решает проблему нахождения смешных историй и "сухого юмора", где стример не кричит и нет фрагов. Я реализовал <strong>скользящее окно в 8 минут с 1-минутным перекрытием</strong>: транскрипт векторизуется через модель <code>bge-m3</code>, и вычисляется семантическое сходство с анкорными маркерами иронии, сарказма и историй. Это добавляет в итоговый граф интереса отдельный семантический поток <strong>$S(t)$</strong>, благодаря чему в клипы попадают не только громкие фраги, но и разговорные панчлайны».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 6 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">6</span>
+                            <h3 class="skill-item-name">Evals &amp; Anti-Hallucination (WER, IoU, Grounding)</h3>
+                        </div>
+                        <span class="skill-pill pill-eval">Evals &amp; Quality</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>CLI эвалюации: WER/CER (ASR) и Temporal IoU (клипы), анти-галлюцинационная привязка цитат к транскрипту.</span>
+                        <span class="skill-file-badge">src/narezka/eval/, judge/validation.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (50 секунд)</div>
+                        <p class="speech-box-text">
+                            «В проекте внедрена культура <strong>Evals &amp; Guardrails</strong>. Качество распознавания речи мы измеряем через <strong>WER и CER</strong> на эталонных аудио, что доказало 34%-е снижение ошибок после изоляции голоса. Точность нарезки клипов оценивается через <strong>Temporal IoU</strong> относительно ручной разметки монтажёра, что гарантирует сохранение завязки момента. А для борьбы с галлюцинациями внедрен <strong>Grounding</strong>: модель обязана возвращать поле <code>evidence_quotes</code>, и наш валидатор проверяет каждую цитату по сырому тексту Whisper. Если модель выдумала слова, вердикт штрафуется и отсекается».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 7 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">7</span>
+                            <h3 class="skill-item-name">AI Agents &amp; Guardrails (Архитектурный контур)</h3>
+                        </div>
+                        <span class="skill-pill pill-llm">Agent Architecture</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Паттерн «Pipeline first, Agent for judgment», финансовый лимит в USD, контроль токенов, тайм-ауты, аварийный фолбэк.</span>
+                        <span class="skill-file-badge">src/narezka/judge/</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (45 секунд)</div>
+                        <p class="speech-box-text">
+                            «Я применил архитектурный паттерн <strong>"Pipeline first, Agent where judgment is needed"</strong>. Вместо того чтобы отдавать весь процесс на откуп недетерминированному агенту, мы сначала детерминированно сжимаем 4 часа видео до 20 кандидатов, и только на них вызываем LLM-судью. Действуют строгие гардрейлы: финансовый лимит стоимости в USD, потолок токенов, валидация временных границ окна и аварийный фолбэк. Агент решает только творческую задачу оценки и нейминга, находясь внутри жесткого инженерного контура».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 8 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">8</span>
+                            <h3 class="skill-item-name">Multimodal AI (Audio + CV + Video-VLM Keyframes)</h3>
+                        </div>
+                        <span class="skill-pill pill-core">Deep Learning / Multimodal</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>HTDemucs вокал, Silero VAD, OpenCV трекинг киллфида + модуль нарезки 8 ключевых кадров для Video-VLM.</span>
+                        <span class="skill-file-badge">src/narezka/judge/frames.py, vision/</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (50 секунд)</div>
+                        <p class="speech-box-text">
+                            «В проекте реализован полный мультимодальный стек: аудио, текст и видео. Для звука используется <strong>HTDemucs</strong> (изоляция вокала) и <strong>Silero VAD</strong>. Для видеоанализа применен <strong>двухступенчатый гибридный подход</strong>: на первом этапе легковесный OpenCV-детектор на 2 FPS ищет кандидатов на фраги (0 МБ VRAM). А на втором этапе модуль <code>extract_candidate_keyframes</code> нарезает 8 равномерных кадров вокруг пика момента, сжимает их в 360p JPEG (~300 KB) и передает в <strong>Video-VLM (Gemini 3.1 Flash Lite)</strong>. Модель видит реальный киллфид, прицел и экшен от первого лица, что полностью устраняет проблему ложных срабатываний при нулевом расходе GPU-памяти».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 9 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">9</span>
+                            <h3 class="skill-item-name">Observability, Caching &amp; Дашборд метрик</h3>
+                        </div>
+                        <span class="skill-pill pill-perf">Observability</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Фиксация пиков VRAM (<code>vram_peak_mb</code>), времени стадий в <code>meta.json</code>, генерация HTML-отчета с SVG графиком S(t).</span>
+                        <span class="skill-file-badge">src/narezka/export/report_html.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (45 секунд)</div>
+                        <p class="speech-box-text">
+                            «Система полностью прозрачна в рантайме. Каждая стадия логирует в файл <code>meta.json</code> точное время выполнения, пиковое потребление видеопамяти <code>vram_peak_mb</code> и размер артефактов. По завершении анализа генерируется <strong>автономный HTML-дашборд с интерактивным графиком функции интереса $S(t)$</strong>, где видны все пики аудио, киллов и чата, а также готовые клипы с таймкодами для YouTube. Это позволяет моментально увидеть, почему именно алгоритм отобрал тот или иной момент».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Skill 10 -->
+                <div class="skill-item-card">
+                    <div class="skill-item-header">
+                        <div class="skill-item-title-wrap">
+                            <span class="skill-num">10</span>
+                            <h3 class="skill-item-name">Hardware &amp; GPU Hygiene (Оптимизация VRAM)</h3>
+                        </div>
+                        <span class="skill-pill pill-perf">Performance</span>
+                    </div>
+                    <div class="skill-impl-row">
+                        <span>Аппаратный рендеринг NVENC, правило «одна модель в VRAM», принудительная очистка кэша CUDA и garbage collector.</span>
+                        <span class="skill-file-badge">src/narezka/utils/gpu.py, media/render.py</span>
+                    </div>
+                    <div class="speech-box">
+                        <div class="speech-box-header">🎙️ Как сказать на собеседовании (45 секунд)</div>
+                        <p class="speech-box-text">
+                            «Поскольку разработка велась под консьюмерскую карту RTX 5070 с 12 ГБ VRAM, ключевым требованием была <strong>строгая GPU-гигиена</strong>. Одновременная загрузка Demucs, Whisper и Ollama вызвала бы OOM. Я реализовал последовательный жизненный цикл моделей: стадия аллоцирует модель, выполняет инференс, выгружает веса и принудительно вызывает <code>gc.collect()</code> и <code>torch.cuda.empty_cache()</code>. <strong>Пиковый расход VRAM ни разу не превышает 8.4 ГБ</strong>. А финальный рендеринг клипов ускорен в разы за счет аппаратного кодировщика NVIDIA NVENC».
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-footer-nav">
+                <button class="page-btn page-btn-prev" onclick="showChapter('ch-intro')">
+                    ← Предыдущая глава: Введение
+                </button>
+                <button class="page-btn page-btn-next" onclick="showChapter('ch-tricky')">
+                    Следующая глава: Каверзные вопросы →
+                </button>
+            </div>
+        </article>
+
+        <!-- ========================================== -->
+        <!-- ГЛАВА 2: КАВЕРЗНЫЕ ВОПРОСЫ (DEEP DIVE)      -->
+        <!-- ========================================== -->
+        <article class="chapter-content" id="ch-tricky">
+            <div class="chapter-hero">
+                <span class="chapter-num">Глава 2 • Проверка на прочность</span>
+                <h1 class="chapter-title">Каверзные вопросы к каждому навыку</h1>
+                <p class="chapter-lead">
+                    Сложные, провокационные вопросы от Lead/Senior интервьюеров, проверяющие глубину понимания архитектуры, и готовые сильные ответы.
+                </p>
+            </div>
+
+            <!-- Tricky 1 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #1 (DAG Engine)</span>
+                    <h3 class="tricky-question">«Зачем писать свой велосипед с DAG-движком и SHA-256 кэшированием, если есть Airflow, Prefect или Celery?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Архитектура бекенда • Выбор инструментов</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «Airflow и Prefect требуют поднятия отдельной инфраструктуры — PostgreSQL, брокера сообщений и фоновых демонов-планировщиков. Для локального CLI и обработки стрима на одной GPU это колоссальный и неоправданный оверхед. 
+                    Наш DAG-движок полностью бессерверный: он дает детерминированное контентно-адресуемое кэширование <code>sha256(input + params + code)</code> прямо на диске без сторонних зависимостей. При этом все 14 стадий изолированы и реализуют общий интерфейс <code>Stage</code>, поэтому при переводе проекта в распределенный enterprise-кластер они оборачиваются в задачи Celery/Temporal за один день без переписывания логики».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат понимает цену инфраструктурного оверхеда, умеет писать чистые абстракции и думает о будущем масштабировании.
+                </div>
+            </div>
+
+            <!-- Tricky 2 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #2 (Structured Outputs)</span>
+                    <h3 class="tricky-question">«Что если модель вернула валидный по типам JSON, но логически бредовый (например, score=10, но verdict='reject', или start_seg > end_seg)? Pydantic это пропустит?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Pydantic v2 • Валидация контрактов • Guardrails</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «Pydantic v2 проверяет не только типы, но и сложную бизнес-логику через <code>@model_validator(mode='after')</code>. Но мы пошли дальше: валидация разделена на два уровня.
+                    Первый — синтаксический (Pydantic схема ловит форматы и типы). Второй — доменный слой <code>validate_judge_verdict()</code>, который гарантирует хронологический порядок <code>start_seg &lt; end_seg</code>, проверяет принадлежность ID сегментов именно текущему окну и наказывает противоречия (если скор $\ge 7$, вердикт обязан быть <code>keep</code>, иначе статус принудительно корректируется). Таким образом, логический бред отсекается до рендеринга».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат разделяет синтаксическую валидацию (схему) и доменные бизнес-инварианты.
+                </div>
+            </div>
+
+            <!-- Tricky 3 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #3 (LLM Client)</span>
+                    <h3 class="tricky-question">«Разные провайдеры (Ollama, OpenAI, Claude) по-разному отдают Structured Outputs. Как избежать ада с адаптерами и костылями?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: LLM API • Multi-Provider Architecture</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «В классе <code>LLMClient</code> применен паттерн "Адаптер". На входе метод <code>generate_json</code> принимает единую Pydantic-модель. В зависимости от выбранного профиля: для OpenAI и Ollama используется нативный параметр <code>response_format={"type": "json_object"}</code>. Для Anthropic схема компилируется через <code>model_json_schema()</code> и подмешивается в системный промпт со строгим правилом вывода. 
+                    А на выходе работает универсальный санитизатор: он через regex срезает блоки рассуждений <code>&lt;think&gt;...&lt;/think&gt;</code> у reasoning-моделей и убирает markdown-обертки <code>```json</code>, гарантируя чистый JSON на этапе <code>json.loads()</code>».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат на практике сталкивался с капризами разных API и умеет изолировать вендор-специфичный код.
+                </div>
+            </div>
+
+            <!-- Tricky 4 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #4 (Self-Hosted)</span>
+                    <h3 class="tricky-question">«Почему именно Qwen-8B, а не LLaMA-3.1-8B? И почему Ollama, а не vLLM?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Выбор SLM моделей • Локальный инференс</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «1) <strong>Выбор модели:</strong> LLaMA-3.1 обучалась преимущественно на английском языке, в русском игровом сленге и мате она часто "плывет" и генерирует неестественные фразы. Qwen 2.5 / Qwen 3 показал колоссальное преимущество в понимании русскоязычного контекста, иронии и игровых терминов. 
+                    2) <strong>Выбор рантайма:</strong> Ollama запускается "из коробки" на Windows с архитектурой Blackwell (RTX 5070 / CUDA 12.8 / sm_120) без танцев с бубном вокруг C++ компиляторов. Для продакшн-сервера на Linux с конкурентными запросами логичным шагом будет переход на vLLM с PagedAttention и непрерывным батчингом».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат выбирает модель под специфику данных (русский язык/сленг), а рантайм — под конкретное железо и ОС.
+                </div>
+            </div>
+
+            <!-- Tricky 5 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #5 (RAG / Embeddings)</span>
+                    <h3 class="tricky-question">«Зачем скользящее окно в 8 минут? Почему не разбить транскрипт на 30-секундные чанки, как делают в стандартном RAG?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Стратегии чанкинга • Семантический контекст</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «Шутки, байки и споры стримеров размазаны во времени. Если нарезать транскрипт на 30-секундные куски, завязка истории окажется в одном чанке, а панчлайн — в другом. Модель в изолированном чанке просто не поймет юмор. 
+                    Окно в 8 минут гарантирует сохранение полного нарративного контекста. А 1-минутный нахлёст (overlap) гарантирует, что шутка на стыке двух окон не окажется разорванной. Для эмбеддингов <code>bge-m3</code> это идеальный формат для захвата глобального смысла беседы».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат понимает фундаментальное ограничение наивного чанкинга в задачах анализа длинных диалогов.
+                </div>
+            </div>
+
+            <!-- Tricky 6 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #6 (Evals &amp; Grounding)</span>
+                    <h3 class="tricky-question">«Метрика WER крайне чувствительна к пунктуации и опечаткам. Как ты считаешь WER, если стримеры говорят с матом и междометиями?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Метрики качества ASR • Текстовая нормализация</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «В модуле <code>ASREvaluator</code> реализован строгий конвейер нормализации (Text Normalizer): приведение к нижнему регистру, полное удаление знаков препинания, раскрытие числительных (например, "2" $\to$ "два") и нормализация буквы "ё" $\to$ "е". 
+                    Кроме того, используется словарь игровых терминов (<code>plugins/common/lexicon_ru.yaml</code>) и стоп-лист галлюцинаций Whisper. Благодаря этому WER оценивает исключительно фонетическую и смысловую точность слов, а не расстановку запятых».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат знает реальные подводные камни оценки речи и не использует сырые библиотечные функции вслепую.
+                </div>
+            </div>
+
+            <!-- Tricky 7 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #7 (Agent Guardrails)</span>
+                    <h3 class="tricky-question">«А где здесь собственно 'агент'? Разве это не просто обычный детерминированный пайплайн с вызовом LLM в конце?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Архитектурные паттерны AI-агентов</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «Агентность здесь реализована на этапе судейства: LLM действует не как пассивный суммаризатор, а как автономный агент-монтажёр. Он получает разнородные мультимодальные факты (визуальные события киллфида, всплески чата, акустические аномалии), сам принимает решение о границах клипа (выбирает, где началась завязка <code>start_seg</code> и где затухает реакция <code>end_seg</code>), присваивает категорию и скор. 
+                    При этом агент помещен в строгий детерминированный контур: гардрейлы проверяют его цитаты по транскрипту, а самокоррекция чинит синтаксис. Это паттерн <em>Constrained Agentic Reasoning</em> — лучший способ использовать LLM в продакшне».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Понимание разницы между неконтролируемым хаотичным агентом и управляемым продакшн-агентом.
+                </div>
+            </div>
+
+            <!-- Tricky 8 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #8 (Multimodal CV)</span>
+                    <h3 class="tricky-question">«Почему OpenCV по цвету для киллфида, а не легковесная YOLOv8-nano, дообученная на плашки?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Computer Vision • Performance vs Precision</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «YOLOv8 требует разметки датасета, инференса нейросети и потребляет драгоценную видеопамять (минимум 1–2 ГБ VRAM). А интерфейс CS2 строго стандартизирован: плашка киллфида всегда имеет четкий красный контур с известными RGB-характеристиками Valve ($R \ge 135, R-G \ge 65$). 
+                    Спектральная маска и морфологические операции в OpenCV работают со скоростью более 300 FPS на CPU, расходуя <strong>0 МБ VRAM</strong> и давая 100% точность без ложных срабатываний. Использовать нейросеть там, где идеально работает детерминированный алгоритм — классический антипаттерн overengineering».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Зрелый инженер, который не пихает нейросети туда, где быстрее и надежнее работает классический CV.
+                </div>
+            </div>
+
+            <!-- Tricky 9 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #9 (Observability)</span>
+                    <h3 class="tricky-question">«Как отследить регрессию качества (Data Drift), если стример сменил игру или обновилась версия модели в Ollama?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Observability • MLOps • Тестирование качества</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «Через команду <code>narezka eval highlights</code>. В проекте предусмотрен эталонный gold-датасет — размеченные профессиональным монтажёром стримы с точными таймкодами лучших моментов. 
+                    При обновлении весов модели или изменении коэффициентов функции $S(t)$ запускается автоматический eval: если метрики F1-score или Temporal IoU падают ниже порогового значения 0.70, такое изменение бракуется. Это классический регрессионный бенчмаркинг для защиты от дрифта качества».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Наличие CI/CD мышления в контексте оценки генеративных и поисковых моделей.
+                </div>
+            </div>
+
+            <!-- Tricky 10 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #10 (GPU Hygiene)</span>
+                    <h3 class="tricky-question">«Вызов torch.cuda.empty_cache() не освобождает память в ОС, память остается в аллокаторе PyTorch. Как ты гарантируешь отсутствие OOM?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: PyTorch internals • Управление памятью CUDA</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «Совершенно верно: <code>empty_cache()</code> освобождает только неиспользуемую кэшированную память аллокатора CUDA, но если на тензоры остались живые Python-ссылки, память не освободится. 
+                    Поэтому в утилите <code>src/narezka/utils/gpu.py</code> реализован строгий трёхшаговый протокол: 
+                    1) Явное удаление ссылки на модель через <code>del model</code>; 
+                    2) Принудительный запуск сборщика мусора <code>gc.collect()</code>, уничтожающий циклические ссылки Python; 
+                    3) И только затем вызов <code>torch.cuda.empty_cache()</code> и <code>torch.cuda.ipc_collect()</code>. 
+                    Это подтверждается автоматическим тестом <code>test_gpu_hygiene.py</code>, который замеряет остаточный VRAM до и после стадии».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Глубокое понимание внутренностей PyTorch, сборщика мусора Python и аллокатора CUDA.
+                </div>
+            </div>
+
+            <!-- Tricky 11 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #8 (Multimodal / Video-VLM)</span>
+                    <h3 class="tricky-question">«Почему наивный отбор по децибелам звука и эвристическому CV провалился на реальных стримах? (Кейс с падением с лестницы)»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Failure Mode Analysis • Эволюция архитектуры в Video-VLM</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «На первом тестовом стриме CS2 произошел показательный сбой: на 0:15 стример упал с лестницы на разминке и громко закричал в микрофон. Аудио-детектор зафиксировал высокий спайк $loud\_z$ и $scream\_p$, а классический CV среагировал на красный элемент интерфейса разминки. В итоге текстовая LLM синтезировала ложный хайлайт 9/10: <em>«Стример раздает двойку и тройку!»</em>. 
+                    Это доказало: <strong>модель обязана видеть реальные кадры геймплея</strong>. Мы внедрили модуль <code>extract_candidate_keyframes</code> (8 ключевых кадров 360p) и подключили Video-VLM. Взглянув на кадры, модель мгновенно отвергла момент с оценкой 1/10: <em>«Разминка перед матчем, фрагов нет, рутинная беготня»</em>. Из 38 кандидатов VLM отсеяла 32 мусорных момента, оставив ровно 6 настоящих раундов».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Кандидат умеет делать глубокий посмертный анализ ошибок (post-mortem) и переводить костыли в фундаментальные ML-решения.
+                </div>
+            </div>
+
+            <!-- Tricky 12 -->
+            <div class="tricky-card">
+                <div class="tricky-card-top">
+                    <span class="tricky-badge">К навыку #7 (Prompt Engineering &amp; Game AI)</span>
+                    <h3 class="tricky-question">«В чем заключается 'Эффект пассажира' (The Passenger Problem) в MOBA/Hero-шутерах (Deadlock) и как его решать?»</h3>
+                </div>
+                <div class="tricky-skill-ref">Область: Domain Adaptation • Personal Agency vs Team Chaos</div>
+                <div class="tricky-answer-box">
+                    <div class="tricky-answer-header">💡 Сильный инженерный ответ:</div>
+                    «В командных играх 6х6 (Deadlock) на экране часто бушует визуальный хаос: ультимейты, эффекты, тимвайпы. Базовая VLM видит этот экшен и ставит 8/10. Но от лица стримера ничего интересного не происходит: он стрелял издалека в спину или стоял сзади как "пассажир". 
+                    Решение — <strong>Personal Agency Prompting &amp; HUD Focus</strong>: мы обязываем VLM оценивать не общий хаос, а конкретно прицел и полоску здоровья (HP bar внизу). Если стример лично не выиграл дуэль 1-в-1, не применил ключевой скилл и не выжил на критическом HP (&lt;25%), момент принудительно штрафуется до $\le 5$ (reject). Это исключает скучные командные перестрелки без личного подвига игрока».
+                </div>
+                <div class="tricky-insight">
+                    <strong>Что слышит тимлид:</strong> Зрелое продуктовое мышление: понимание, что зритель стрима смотрит на реакцию и скилл автора, а не на абстрактный фон.
+                </div>
+            </div>
+
+            <div class="chapter-footer-nav">
+                <button class="page-btn page-btn-prev" onclick="showChapter('ch-skills')">
+                    ← Предыдущая глава: Карта навыков
+                </button>
+                <button class="page-btn page-btn-next" onclick="showChapter('ch-pipeline')">
+                    Следующая глава: Пайплайн DAG →
+                </button>
+            </div>
+        </article>
+
+        <!-- ========================================== -->
+        <!-- ГЛАВА 3: ПАЙПЛАЙН DAG (14 СТАДИЙ)           -->
+        <!-- ========================================== -->
+        <article class="chapter-content" id="ch-pipeline">
+            <div class="chapter-hero">
+                <span class="chapter-num">Глава 3 • Архитектура данных</span>
+                <h1 class="chapter-title">Сквозной пайплайн DAG (14 стадий)</h1>
+                <p class="chapter-lead">
+                    Полный путь данных от сырого 4-часового broadcast-видео до готовых MP4 клипов, таймкодов и HTML-дашборда.
+                </p>
+            </div>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span class="terminal-dot dot-red"></span>
+                    <span class="terminal-dot dot-yellow"></span>
+                    <span class="terminal-dot dot-green"></span>
+                    <span class="terminal-title">narezka-dag-executor — pipeline_flow.log</span>
+                </div>
+                <div class="terminal-body">[ <span class="t-cyan">RAW BROADCAST VOD</span>: 1080p60 (2-8 часов) ]
+    │
+    ├───► <span class="t-cyan">S00 Probe</span>              [ffprobe: метаданные, видео/аудиопотоки, проверка целостности]
+    ├───► <span class="t-cyan">S01 Audio Extract</span>      [FFmpeg: быстрый демукс в 16 kHz Mono PCM]
+    ├───► <span class="t-green">S02 Voice Isolation</span>    [HTDemucs: разделение дорожек вокала стримера и выстрелов/музыки]
+    ├───► <span class="t-green">S03 VAD + LID</span>          [Silero VAD + FastText: фильтрация тишины и не-RU речи]
+    ├───► <span class="t-green">S04 Whisper ASR</span>        [Faster-Whisper Large-v3/Turbo + фонетический словарь сленга]
+    │
+    ├───► <span class="t-yellow">S06 Audio Features</span>     [ITU-R BS.1770-4 LUFS + Yin Pitch трекер криков/смеха]
+    ├───► <span class="t-yellow">S07 Vision CV</span>          [OpenCV: красная маска киллфида CS2 + ростер героев Deadlock]
+    ├───► <span class="t-yellow">S08 Chat Features</span>      [Парсинг чата Twitch/Kick: спайки сообщений и KEKW/LUL сентимент]
+    └───► <span class="t-yellow">S09 Semantic Scan</span>      [Оконный скан транскрипта: поиск иронии и панчлайнов]
+                                    │
+                                    ▼
+              [ <span class="t-purple">S10 Timeline Fusion &amp; Candidates</span> ]
+              • Сведение 4 сигналов в непрерывную функцию: <span class="t-cyan">S(t) = w_a·A(t) + w_v·V(t) + w_c·C(t) + w_s·S(t)</span>
+              • Гауссово сглаживание, поиск локальных пиков, гистерезис и Non-Maximum Suppression (NMS)
+              • Гарантированная завязка: <span class="t-green">+15-20 секунд</span> контекста ситуации до выстрела/хайлайта
+                                    │
+                                    ▼
+              [ <span class="t-purple">S10.5 Candidate Keyframe Extractor</span> ]
+              • <code>extract_candidate_keyframes()</code>: извлечение ровно 8 кадров на кандидата в 360p JPEG
+              • Легковесный base64 payload (<span class="t-cyan">~300 КБ суммарно</span>), 0 MB расхода VRAM, подготовка за ~200 мс
+                                    │
+                                    ▼
+              [ <span class="t-purple">S11 Multimodal Judge (Gemini 3.1 Flash Lite / Ollama Qwen 2.5 14B)</span> ]
+              • Visual Grounding: верификация киллфида CS2, прицела и HP-бара в Deadlock по 8 кадрам
+              • Prompt: <span class="t-green">judge_vlm_ru.md</span> с фокусом на Personal Agency и выживании на критическом HP
+              • Pydantic v2 Schema: <span class="t-green">JudgeVerdict</span> (score 1-10, confidence, highlights, quotes)
+              • Анти-галлюцинационный валидатор: grounding цитат по Whisper-транскрипту
+              • Сетевой клиент: роутинг через локальный прокси Nova (127.0.0.1:1371) + exponential backoff на 503/429
+                                    │
+                                    ▼
+              [ <span class="t-rose">S12 Ranking &amp; Deduplication</span> ]
+              • Отбор топовых хайлайтов (score &ge; 6, confidence &ge; 0.70), NMS-дедупликация пересечений
+                                    │
+                                    ▼
+              [ <span class="t-rose">S13 Hardware NVENC Video Render &amp; Analytics</span> ]
+              • Нарезка готовых MP4 через аппаратный энкодер <span class="t-cyan">h264_nvenc</span> (CQ 21, preset fast, 0% CPU lock)
+              • Экспорт таймкодов для YouTube и генерация интерактивного HTML-отчета со встроенным видеоплеером</div>
+            </div>
+
+            <!-- Архитектурные слои DAG -->
+            <h3 style="font-size: 18px; margin: 24px 0 14px 0;">🏗️ Архитектурные слои и ключевые оптимизации DAG</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; border-top: 3px solid #0284c7;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-bottom: 4px;">Слой 1 • Стадии S00–S10</div>
+                    <strong style="color: var(--text-primary); display: block; margin-bottom: 6px; font-size: 15px;">Быстрый эвристический префильтр</strong>
+                    <span style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.55;">
+                        0 MB VRAM, 100x realtime скорость на CPU. Сжимает 14,400+ секунд стрима до 30–60 целевых кандидатов (коэффициент компрессии данных <strong>&gt;99.5%</strong>), исключая необходимость гонять видеомодели по всему хронометражу.
+                    </span>
+                </div>
+                <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; border-top: 3px solid #7c3aed;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #7c3aed; text-transform: uppercase; margin-bottom: 4px;">Слой 2 • Стадии S10.5–S11</div>
+                    <strong style="color: var(--text-primary); display: block; margin-bottom: 6px; font-size: 15px;">Video-VLM &amp; Visual Grounding</strong>
+                    <span style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.55;">
+                        Извлечение 8 ключевых кадров 360p (~300 КБ). <strong>Gemini 3.1 Flash Lite</strong> оценивает момент за 1.5–2 секунды, проверяя киллфид, прицел и личный вклад игрока. Ошибочные крики и фоновый хаос отсеиваются с точностью 95%+.
+                    </span>
+                </div>
+                <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; border-top: 3px solid #059669;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #059669; text-transform: uppercase; margin-bottom: 4px;">Слой 3 • Стадии S12–S13</div>
+                    <strong style="color: var(--text-primary); display: block; margin-bottom: 6px; font-size: 15px;">NVENC Рендеринг &amp; Дашборд</strong>
+                    <span style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.55;">
+                        Аппаратный энкодер <code>h264_nvenc</code> режет клипы на GPU в реальном времени. Автоматическая сборка <code>report.html</code> со встроенными HTML5-видеоплеерами, бейджами вердиктов VLM и экспорт таймкодов для YouTube.
+                    </span>
+                </div>
+            </div>
+
+            <div class="chapter-footer-nav">
+                <button class="page-btn page-btn-prev" onclick="showChapter('ch-tricky')">
+                    ← Предыдущая глава: Каверзные вопросы
+                </button>
+                <button class="page-btn page-btn-next" onclick="showChapter('ch-architecture')">
+                    Следующая глава: Инженерия LLM →
+                </button>
+            </div>
+        </article>
+
+        <!-- ========================================== -->
+        <!-- ГЛАВА 4: ИНЖЕНЕРИЯ LLM & GUARDRAILS        -->
+        <!-- ========================================== -->
+        <article class="chapter-content" id="ch-architecture">
+            <div class="chapter-hero">
+                <span class="chapter-num">Глава 4 • Надежность &amp; Guardrails</span>
+                <h1 class="chapter-title">Инженерия LLM: Защита от сбоев</h1>
+                <p class="chapter-lead">
+                    Как система гарантирует 100% стабильность генерации, отсутствие бесконечных циклов и отсекает галлюцинации.
+                </p>
+            </div>
+
+            <div class="deep-dive-card">
+                <div class="deep-dive-header">
+                    <div class="deep-dive-num">1</div>
+                    <h3 class="deep-dive-title">Structured Outputs &amp; Цикл самокоррекции</h3>
+                </div>
+                <div class="deep-dive-problem">
+                    <strong>Проблема:</strong> Малые локальные SLM при открытом выводе ломают JSON, добавляют markdown-разметку или галлюцинируют несуществующие поля.
+                </div>
+                <ul class="deep-dive-list">
+                    <li><strong>Pydantic v2 JSON Schema:</strong> схема компилируется на лету и принудительно внедряется в API-запрос.</li>
+                    <li><strong>Самокоррекция с лимитом (max_retries=2):</strong> код не падает, а отправляет ошибку валидации обратно в промпт модели: <em>«Ошибка схемы: {error}. Исправь JSON»</em>.</li>
+                    <li><strong>Graceful Degradation:</strong> бесконечный цикл исключен! Если модель за 3 попытки не справилась, фрагмент маркируется как <code>llm_error</code>, а пайплайн спокойно продолжает оценивать остальные моменты.</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card">
+                <div class="deep-dive-header">
+                    <div class="deep-dive-num">2</div>
+                    <h3 class="deep-dive-title">Grounding цитат: Фильтр выдуманных фактов</h3>
+                </div>
+                <div class="deep-dive-problem">
+                    <strong>Проблема:</strong> Модель может придумать несуществующую шутку или реплику стримера и на её основе выставить высокий балл.
+                </div>
+                <ul class="deep-dive-list">
+                    <li>Модель обязана вернуть массив <code>evidence_quotes</code> с дословными фразами.</li>
+                    <li>Функция <code>validate_judge_verdict()</code> сверяет каждую фразу с реальным транскриптом Whisper.</li>
+                    <li>Если модель присочинила слова, вердикт штрафуется и помечается флагом <code>ungrounded</code>.</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card">
+                <div class="deep-dive-header">
+                    <div class="deep-dive-num">3</div>
+                    <h3 class="deep-dive-title">Изоляция вокала Demucs vs Сырое аудио</h3>
+                </div>
+                <div class="deep-dive-problem">
+                    <strong>Проблема:</strong> Выстрелы и музыка CS2 глушат голос стримера и вводят Whisper в циклы галлюцинаций.
+                </div>
+                <ul class="deep-dive-list">
+                    <li>Нейросеть HTDemucs разделяет аудиодорожку на изолированный вокал и инструментал/звуки игры.</li>
+                    <li>Эксперименты на gold-датасете доказали: Word Error Rate (WER) снизился на <strong>34.2%</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card">
+                <div class="deep-dive-header">
+                    <div class="deep-dive-num">4</div>
+                    <h3 class="deep-dive-title">Video-VLM Keyframe Extraction: Мультимодальность без VRAM-оверхеда</h3>
+                </div>
+                <div class="deep-dive-problem">
+                    <strong>Проблема:</strong> Передавать гигабайты сырого видео в облачные API дорого по трафику и квотам токенов, а запуск локальных VLM (Qwen2-VL / LLaVA) требует &gt;16 GB VRAM и конфликтует с Whisper/Demucs.
+                </div>
+                <ul class="deep-dive-list">
+                    <li><strong>Алгоритм <code>extract_candidate_keyframes()</code></strong>: модуль в <code>src/narezka/judge/frames.py</code> производит равномерную временную выборку ровно 8 кадров на кандидата в сжатом разрешении 360p JPEG.</li>
+                    <li><strong>Компактный Base64 Payload</strong>: суммарный вес всех 8 изображений составляет всего <strong>~300 КБ</strong>, что укладывается в доли секунды сетевой передачи и минимальный расход контекстного окна.</li>
+                    <li><strong>Мгновенное визуальное понимание</strong>: Gemini 3.1 Flash Lite за 1.5 с считывает киллфид, интерфейс здоровья (HP bar) и перекрестие прицела, расходуя <strong>0 MB локального GPU VRAM</strong> и укладываясь в бесплатный лимит 1500 RPM.</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card">
+                <div class="deep-dive-header">
+                    <div class="deep-dive-num">5</div>
+                    <h3 class="deep-dive-title">Сетевая отказоустойчивость: Обход геоблокировок API и защита от 503/429</h3>
+                </div>
+                <div class="deep-dive-problem">
+                    <strong>Проблема:</strong> Google AI Studio возвращает <code>400 FAILED_PRECONDITION: User location is not supported</code> для РФ, а в часы пик эндпоинт OpenAI-совместимости генерирует спорадические ошибки 503 Service Unavailable и 429 Rate Limit.
+                </div>
+                <ul class="deep-dive-list">
+                    <li><strong>Проксирование через Nova</strong>: в <code>src/narezka/llm/client.py</code> встроен прозрачный проксинг через локальный порт Nova (<code>http://127.0.0.1:1371</code>, точка выхода Opera EU в Амстердаме), управляемый переменной <code>HTTPS_PROXY</code>.</li>
+                    <li><strong>Двухуровневый Retry с Exponential Backoff</strong>: сетевые сбои (503, 429, timeouts) отлавливаются на транспортном уровне с автоматической паузой 1.5s &rarr; 3.0s, <em>не расходуя попытки самокоррекции JSON-схемы</em>.</li>
+                    <li><strong>Разделение сетевой и семантической валидации</strong>: если облако временно перегружено, клиент ожидает восстановления соединения, а не штрафует модель за невалидный JSON, обеспечивая 100% стабильность сквозного прогона.</li>
+                </ul>
+            </div>
+
+            <div class="chapter-footer-nav">
+                <button class="page-btn page-btn-prev" onclick="showChapter('ch-pipeline')">
+                    ← Предыдущая глава: Пайплайн DAG
+                </button>
+                <button class="page-btn page-btn-next" onclick="showChapter('ch-prod-star')">
+                    Следующая глава: Scale to Prod &amp; STAR →
+                </button>
+            </div>
+        </article>
+
+        <!-- ========================================== -->
+        <!-- ГЛАВА 5: PRODUCTION & STAR                  -->
+        <!-- ========================================== -->
+        <article class="chapter-content" id="ch-prod-star">
+            <div class="chapter-hero">
+                <span class="chapter-num">Глава 5 • Масштабирование &amp; Интервью</span>
+                <h1 class="chapter-title">Production Roadmap &amp; STAR Истории</h1>
+                <p class="chapter-lead">
+                    Архитектура масштабирования в распределенный микросервис и готовые ответы по методологии STAR.
+                </p>
+            </div>
+
+            <h3 style="margin-top: 0; font-size: 18px;">🚀 Как масштабировать проект в Production</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 30px;">
+                <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; border-top: 3px solid var(--primary);">
+                    <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">1. FastAPI + Celery / Temporal</strong>
+                    <span style="font-size: 13.5px; color: var(--text-secondary);">CLI оборачивается в асинхронный воркер-пул с эндпоинтом <code>POST /api/v1/jobs</code> и стримингом прогресса через WebSocket.</span>
+                </div>
+                <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; border-top: 3px solid var(--primary);">
+                    <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">2. PostgreSQL + pgvector</strong>
+                    <span style="font-size: 13.5px; color: var(--text-secondary);">Перенос локальных JSON в реляционную БД, а эмбеддингов — в <code>pgvector</code> для межстримового поиска клипов по смыслу.</span>
+                </div>
+                <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; border-top: 3px solid var(--primary);">
+                    <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">3. MinIO / S3 + Redis</strong>
+                    <span style="font-size: 13.5px; color: var(--text-secondary);">Хранение нарезанных видео в S3 с пресайн-ссылками, кэширование стадий и статусов очередей в Redis.</span>
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin-bottom: 16px;">💬 Готовые STAR-ответы для собеседования</h3>
+
+            <!-- STAR Card 1 -->
+            <div class="star-card">
+                <div class="star-card-header">
+                    <span class="star-badge">STAR #1</span>
+                    <h3 class="star-question">«Расскажи про самый сложный баг или челлендж, с которым ты столкнулся в проекте?»</h3>
+                </div>
+                <div class="star-body">
+                    <div class="star-step">
+                        <strong>Situation &amp; Task</strong>
+                        Самым сложным челленджем была детекция личных фрагов стримера в CS2. Изначально мы искали киллы по голосу, но в напряженных клатчах игроки молчат. Я добавил OpenCV трекер киллфида. 
+                        На первом прогоне песок карты Mirage вызывал паразитные срабатывания в HSV, а при последующих убийствах плашка стримера сдвигалась вниз — алгоритм считал это новым фрагом и насчитал 106 киллов за раунд.
+                    </div>
+                    <div class="star-step">
+                        <strong>Action (Инженерное решение)</strong>
+                        1) Разработал строгий RGB-фильтр доминирования красного спектра ($R \ge 135$ с большим отрывом от $G$ и $B$), отсекающий текстуры карты.
+                        2) Внедрил трекер активных плашек с допуском смещения по $y$ при появлении новых строк.
+                        3) Добавил минимальный кулдаун между выстрелами (1.5 с) и ограничил мультикилл лимитом раунда CS2 (5 фрагов).
+                    </div>
+                    <div class="star-step">
+                        <strong>Result (Результат)</strong>
+                        На 3.5-часовом стриме точность детекции выросла до 100%, ложные дубликаты полностью исчезли, а весь видеоанализ стрима занял 28 минут при 0 MB расхода VRAM.
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAR Card 2 -->
+            <div class="star-card">
+                <div class="star-card-header">
+                    <span class="star-badge">STAR #2</span>
+                    <h3 class="star-question">«Как ты предотвращаешь галлюцинации LLM при генерации клипов?»</h3>
+                </div>
+                <div class="star-body">
+                    <div class="star-step">
+                        <strong>Situation &amp; Task</strong>
+                        Малые локальные LLM (8B) при открытом судействе склонны выдумывать эмоциональные фразы, ошибаться в таймингах или ломать синтаксис JSON, что ломает downstream видеорендеринг.
+                    </div>
+                    <div class="star-step">
+                        <strong>Action (Инженерное решение)</strong>
+                        1) <em>Контрактная валидация</em>: Pydantic v2 генерирует JSON-схему, а клиент использует structured outputs с самокоррекцией.
+                        2) <em>Grounding цитат</em>: функция <code>validate_judge_verdict</code> сверяет каждую цитату с сырым транскриптом Whisper. Если слов не было, вердикт штрафуется.
+                        3) <em>Контроль границ</em>: начало и конец клипа привязываются строго к существующим ID сегментов <code>start_seg</code> и <code>end_seg</code>.
+                    </div>
+                    <div class="star-step">
+                        <strong>Result (Результат)</strong>
+                        Пайплайн на 100% защищен от сбоев формата, а в готовые клипы попадают только реальные диалоги с сохранением завязки момента.
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAR Card 3 -->
+            <div class="star-card">
+                <div class="star-card-header">
+                    <span class="star-badge" style="background: #059669;">STAR #3</span>
+                    <h3 class="star-question">«Кейс 'Падение с лестницы' и Decibel Fallacy: как вы победили ложные срабатывания от криков через Video-VLM?»</h3>
+                </div>
+                <div class="star-body">
+                    <div class="star-step">
+                        <strong>Situation &amp; Task</strong>
+                        В первом прогоне стрима CS2 произошел показательный сбой: на 0:15 стример упал с лестницы на разминке и громко закричал в микрофон. Аудио-детектор зафиксировал высокий спайк $loud\_z$ и $scream\_p$, а классический CV среагировал на красную табличку разминочного интерфейса. Текстовая LLM без доступа к видеокадрам нагаллюцинировала хайлайт 9/10: <em>«Стример раздает двойку и тройку!»</em>. Стояла задача: исключить ложные срабатывания от громких звуков, не имеющих игрового подтверждения.
+                    </div>
+                    <div class="star-step">
+                        <strong>Action (Инженерное решение)</strong>
+                        1) <em>Модуль извлечения ключевых кадров</em>: разработал <code>extract_candidate_keyframes()</code>, который нарезает ровно 8 кадров кандидата в компактный JPEG 360p base64 payload (~300 КБ).
+                        2) <em>Переход на Video-VLM</em>: подключил <strong>Gemini 3.1 Flash Lite</strong> с промптом <code>judge_vlm_ru.md</code>, обязывающим модель осуществлять <strong>Visual Grounding</strong> — сверять наличие ника стримера в правом верхнем киллфиде CS2.
+                        3) <em>Сетевой туннель</em>: настроил маршрутизацию через локальный прокси Nova (127.0.0.1:1371) для обхода региональных ограничений Google AI Studio и добавил exponential backoff на 503/429.
+                    </div>
+                    <div class="star-step">
+                        <strong>Result (Результат)</strong>
+                        Взглянув на кадры, Video-VLM мгновенно отклонила падение с лестницы с вердиктом 1/10: <em>«Разминка перед матчем, фрагов нет, рутинная беготня»</em>. Из 38 кандидатов стрима CS2 модель отсеяла 32 мусорных момента, оставив ровно 6 подлинных раундов, а весь отбор занял менее 2 минут.
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAR Card 4 -->
+            <div class="star-card">
+                <div class="star-card-header">
+                    <span class="star-badge" style="background: #7c3aed;">STAR #4</span>
+                    <h3 class="star-question">«Проблема 'Пассажира' (Personal Agency) в Deadlock: как отделить хаос на экране от реального скилла стримера?»</h3>
+                </div>
+                <div class="star-body">
+                    <div class="star-step">
+                        <strong>Situation &amp; Task</strong>
+                        При запуске пайплайна на MOBA-шутере Deadlock (6v6) мы столкнулись с 'эффектом пассажира': на экране постоянно гремят взрывы, ультимейты и командные тимвайпы. Базовая VLM видела этот визуальный хаос и выставляла 8/10 моментам, где стример просто стоял позади тиммейтов, стрелял в спину или вообще не участвовал в бою. Клипы получались визуально яркими, но скучными от лица автора.
+                    </div>
+                    <div class="star-step">
+                        <strong>Action (Инженерное решение)</strong>
+                        1) <em>Personal Agency Prompting</em>: переработал системный промпт, запретив оценивать общую динамику матча и сфокусировав внимание модели строго на <strong>прицеле стримера</strong> и <strong>нижней полоске здоровья (HP bar)</strong>.
+                        2) <em>Критерии фильтрации</em>: установил жесткое правило: если стример лично не оформил решающий фраг (подтвержденный киллфидом), не выиграл дуэль 1-в-1 или не спасся на критическом здоровье (&lt;25% HP) благодаря своевременному кулдауну скилла — момент принудительно штрафуется до $\le 5$ (reject).
+                        3) <em>Контекстная завязка</em>: увеличил левый захват времени кандидата (+15-20 с), чтобы зритель видел развитие дуэли, а не только финальный взрыв.
+                    </div>
+                    <div class="star-step">
+                        <strong>Result (Результат)</strong>
+                        На стриме Deadlock VLM отсеяла 50 из 60 кандидатов с 'эффектом пассажира' и рутинным фармом крипов, отобрав ровно 10 эталонных моментов (выигрыш дуэлей на волоске от смерти, перевороты файтов), полностью совпавших с экспертной оценкой контент-мейкера.
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-footer-nav">
+                <button class="page-btn page-btn-prev" onclick="showChapter('ch-architecture')">
+                    ← Предыдущая глава: Инженерия LLM
+                </button>
+                <button class="page-btn page-btn-next" onclick="showChapter('ch-intro')">
+                    В начало учебника ↺
+                </button>
+            </div>
+        </article>
+
+    </div>
+</div>
+
+<script>
+const chapters = [
+    { id: 'ch-intro', title: 'Глава 0: Введение & Pitch', num: 1 },
+    { id: 'ch-skills', title: 'Глава 1: Карта навыков (40–60с)', num: 2 },
+    { id: 'ch-tricky', title: 'Глава 2: Каверзные вопросы', num: 3 },
+    { id: 'ch-pipeline', title: 'Глава 3: Пайплайн DAG (14 стадий)', num: 4 },
+    { id: 'ch-architecture', title: 'Глава 4: Инженерия LLM & Guardrails', num: 5 },
+    { id: 'ch-prod-star', title: 'Глава 5: Scale to Prod & STAR', num: 6 }
+];
+
+function showChapter(chapterId) {
+    // Hide all chapters
+    document.querySelectorAll('.chapter-content').forEach(el => {
+        el.classList.remove('active');
+    });
+
+    // Remove active class from buttons
+    document.querySelectorAll('.chapter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show target chapter
+    const target = document.getElementById(chapterId);
+    if (target) {
+        target.classList.add('active');
+    }
+
+    // Set active button
+    const btn = document.getElementById('btn-' + chapterId);
+    if (btn) {
+        btn.classList.add('active');
+    }
+
+    // Update breadcrumbs and indicator
+    const chObj = chapters.find(c => c.id === chapterId);
+    if (chObj) {
+        document.getElementById('current-chapter-crumb').textContent = chObj.title;
+        document.getElementById('chapter-indicator').textContent = `Глава ${chObj.num} из ${chapters.length}`;
+    }
+
+    // Scroll top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Update URL hash
+    history.replaceState(null, null, '#' + chapterId);
+}
+
+// Handle initial hash routing
+window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && chapters.some(c => c.id === hash)) {
+        showChapter(hash);
+    }
+});
+
+// Arrow key navigation between chapters
+window.addEventListener('keydown', (e) => {
+    const currentActive = document.querySelector('.chapter-content.active');
+    if (!currentActive) return;
+    const currentIndex = chapters.findIndex(c => c.id === currentActive.id);
+
+    if (e.key === 'ArrowRight' && currentIndex < chapters.length - 1) {
+        showChapter(chapters[currentIndex + 1].id);
+    } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        showChapter(chapters[currentIndex - 1].id);
+    }
+});
+</script>
+
+</body>
+</html>
